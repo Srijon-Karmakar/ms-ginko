@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Ms Ginko Restaurant Website
 
-## Getting Started
+Full-featured restaurant website built with Next.js (App Router) and Supabase.
 
-First, run the development server:
+## Includes
+
+- Home, Menu, About, Gallery, Reserve pages
+- Contact modal with backend endpoint
+- Google OAuth login (required only for reservation flow)
+- Customer dashboard (`/dashboard`)
+- Admin dashboard (`/admin/dashboard`)
+- Reservation rules and validation
+- Menu search + category filtering
+- Ordering links for Zomato and Swiggy
+- SEO foundations: metadata, OpenGraph, robots, sitemap, JSON-LD
+
+## Tech
+
+- Next.js 16 + React 19 + TypeScript
+- Tailwind CSS v4
+- Supabase Auth + Postgres + RLS
+
+## Setup
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Create env file:
+
+```bash
+cp .env.example .env.local
+```
+
+3. Fill these values in `.env.local`:
+
+- `NEXT_PUBLIC_SITE_URL`
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+4. In Supabase SQL editor, run:
+
+- `supabase/schema.sql`
+
+5. Configure Google Auth in Supabase:
+
+- Supabase Dashboard -> Authentication -> Providers -> Google
+- Add callback URL:
+  - `http://localhost:3000/auth/callback` (dev)
+  - your production URL + `/auth/callback`
+
+6. Promote one user as admin after first login:
+
+```sql
+update public.profiles
+set role = 'admin'
+where id = '<your-auth-user-id>';
+```
+
+7. Run app:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Reservation Rules
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Closed on Monday
+- Lunch: `12:00-15:00`
+- Dinner: `18:00-22:30`
+- Slot interval: `30` minutes
+- Booking window: `30` days in advance
+- Party size: `1-12`
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+- `src/app` - routes and server actions
+- `src/components` - UI and interactive components
+- `src/lib` - data, rules, Supabase helpers
+- `supabase/schema.sql` - tables, policies, and seed data
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Notes
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Payment integration is intentionally not implemented yet.
+- Current logo is a template placeholder (`public/brand/logo-template.svg`).
+- Ordering is redirected to Swiggy/Zomato links.
