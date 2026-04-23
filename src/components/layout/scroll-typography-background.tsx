@@ -46,7 +46,7 @@ export function ScrollTypographyBackground() {
   }, []);
 
   return (
-    <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden select-none">
+    <div aria-hidden className="pointer-events-none fixed inset-0 z-0 hidden overflow-hidden select-none sm:block">
       {tracks.map((track, index) => {
         const offset = track.start + (track.end - track.start) * progress;
         const reveal = clamp(progress * 125 - index * 10, 0, 100);

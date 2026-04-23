@@ -1,17 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { HeroTakeover } from "@/components/home/hero-takeover";
 import { siteConfig } from "@/lib/site-data";
-
-const heroLetters = [
-  { char: "M", img: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&q=75" },
-  { char: "S", img: "https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=600&q=75" },
-  { char: "G", img: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&q=75" },
-  { char: "I", img: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=600&q=75" },
-  { char: "N", img: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=600&q=75" },
-  { char: "K", img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&q=75" },
-  { char: "O", img: "https://images.unsplash.com/photo-1551024601-bec78aea704b?w=600&q=75" },
-];
 
 const galleryPhotos = [
   {
@@ -47,74 +38,10 @@ const structuredData = {
 export default function Home() {
   return (
     <>
-      {/* ── HERO ───────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[var(--background)]">
-        {/* Animated botanical path */}
-        <div
-          className="pointer-events-none absolute inset-0 z-10 overflow-hidden"
-          aria-hidden="true"
-        >
-          <svg
-            viewBox="0 0 1200 700"
-            preserveAspectRatio="xMidYMid slice"
-            className="absolute inset-0 h-full w-full"
-          >
-            <path
-              pathLength="1"
-              className="path-draw visible"
-              style={{
-                stroke: "color-mix(in srgb, var(--accent) 28%, #f0d0c0)",
-                strokeWidth: "2.5",
-              }}
-              d="M 420,30 C 400,70 380,110 370,160 C 360,210 370,260 360,310 C 350,360 320,390 310,440 C 300,490 310,540 330,590
-                 M 370,160 C 400,140 440,120 480,100 C 520,80 560,70 600,80 C 640,90 660,120 650,160 C 640,200 610,220 610,260 C 610,300 640,330 650,370 C 660,410 640,450 620,480
-                 M 600,80 C 650,60 700,60 740,80 C 780,100 800,140 790,180 C 780,220 750,240 750,280 C 750,320 780,350 800,380"
-            />
-          </svg>
-        </div>
-
-        {/* Photo-letter hero strip */}
-        <div className="relative z-0 flex overflow-hidden" aria-label={siteConfig.name}>
-          {heroLetters.map(({ char, img }) => (
-            <span
-              key={char}
-              aria-hidden="true"
-              className="photo-letter flex-1"
-              style={{ backgroundImage: `url(${img})` }}
-            >
-              {char}
-            </span>
-          ))}
-        </div>
-
-        {/* Intro text */}
-        <div className="page-inner relative z-10 grid gap-6 pb-16 pt-6 lg:grid-cols-2">
-          <h1
-            className="reveal-text text-4xl font-bold italic leading-tight text-[var(--foreground)] sm:text-5xl lg:text-[3.4rem]"
-            style={{ fontFamily: "var(--font-display), sans-serif" }}
-          >
-            Australian Brunch & Coffee Shop in the Heart of the City
-          </h1>
-          <div className="space-y-4 lg:pt-3">
-            <p
-              className="reveal-text ui-copy text-xl leading-8"
-              style={{ animationDelay: "140ms" }}
-            >
-              We believe coffee and food are more than simple pleasures — they are moments to
-              connect, to slow down, and to feel right at home.
-            </p>
-            <p
-              className="reveal-text font-semibold italic text-[var(--foreground)]"
-              style={{ animationDelay: "240ms" }}
-            >
-              Welcome to Ms Ginko!
-            </p>
-          </div>
-        </div>
-      </section>
+      <HeroTakeover />
 
       {/* ── THIS SEASON ─────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[var(--accent)] py-12 sm:py-16">
+      <section className="relative overflow-hidden bg-[var(--accent)] py-10 sm:py-16">
         {/* Decorative botanical line */}
         <div
           className="pointer-events-none absolute inset-0 overflow-hidden"
@@ -174,7 +101,7 @@ export default function Home() {
                 ← Brunch time
               </Link>
             </div>
-            <div className="mt-8 space-y-3 border-t border-[rgba(255,248,242,0.18)] pt-8 sm:mt-0 sm:border-t-0 sm:pl-8 sm:pt-0">
+            <div className="mt-6 space-y-3 border-t border-[rgba(255,248,242,0.18)] pt-6 sm:mt-0 sm:border-t-0 sm:pl-8 sm:pt-0">
               <h2
                 className="scroll-reveal text-2xl font-bold uppercase tracking-[0.04em]"
                 data-delay="1"
@@ -254,11 +181,11 @@ export default function Home() {
 
       {/* ── PHOTO GALLERY ───────────────────────────────── */}
       <section
-        className="flex overflow-hidden"
-        style={{ height: "clamp(200px, 40vw, 520px)" }}
+        className="flex gap-2 overflow-x-auto px-3 sm:gap-0 sm:overflow-hidden sm:px-0"
+        style={{ height: "clamp(190px, 40vw, 520px)" }}
       >
         {galleryPhotos.map((photo, i) => (
-          <div key={photo.src} className="relative flex-1 overflow-hidden">
+          <div key={photo.src} className="relative min-w-[78%] overflow-hidden rounded-md sm:min-w-0 sm:flex-1 sm:rounded-none">
             <Image
               src={photo.src}
               alt={photo.alt}

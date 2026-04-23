@@ -274,6 +274,10 @@ a {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .hero-prefix {
+    animation: none;
+  }
+
   .reveal-text {
     animation: none;
   }
@@ -325,22 +329,107 @@ a {
   }
 }
 
+@media (max-width: 639px) {
+  .page-inner {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+}
+
 /* ── Photo cutout letters ─────────────────────────── */
 
-.photo-letter {
+.photo-word {
   background-clip: text;
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
   font-family: var(--font-display), sans-serif;
-  font-size: clamp(4rem, 30vh, 28rem);
+  display: block;
+  font-size: clamp(6rem, 29vw, 22rem);
   font-weight: 700;
-  line-height: 0.88;
+  letter-spacing: -0.06em;
+  line-height: 0.78;
   overflow: hidden;
   text-align: center;
   text-transform: uppercase;
+  width: 100%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+.hero-letters-wrap {
+  padding-top: 0;
+}
+
+.hero-prefix {
+  color: var(--foreground);
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(0.95rem, 2.2vw, 1.5rem);
+  font-style: italic;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  margin-bottom: 0.1rem;
+  text-align: center;
+  text-transform: uppercase;
+  animation: miss-reveal 820ms cubic-bezier(0.2, 0.8, 0.2, 1) both,
+    miss-float 3.4s ease-in-out 920ms infinite;
+}
+
+.hero-letters {
+  display: block;
+  width: 100%;
+}
+
+@media (max-width: 639px) {
+  .hero-letters {
+    min-height: 0;
+  }
+
+  .hero-prefix {
+    font-size: 0.95rem;
+    letter-spacing: 0.12em;
+    margin-bottom: 0.12rem;
+  }
+
+  .photo-word {
+    font-size: clamp(7.2rem, 33vw, 13rem);
+    letter-spacing: -0.03em;
+    line-height: 0.76;
+    transform: scaleX(1.12);
+    transform-origin: center;
+  }
+}
+
+@keyframes miss-reveal {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.92);
+    letter-spacing: 0.28em;
+    filter: blur(1px);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(0) scale(1.02);
+    letter-spacing: 0.16em;
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    letter-spacing: 0.14em;
+    filter: blur(0);
+  }
+}
+
+@keyframes miss-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
 }
 
 /* ── Section watermark ────────────────────────────── */
@@ -357,6 +446,13 @@ a {
   text-transform: uppercase;
   user-select: none;
   white-space: nowrap;
+}
+
+@media (max-width: 639px) {
+  .section-watermark {
+    font-size: clamp(3.6rem, 20vw, 8rem);
+    letter-spacing: 0.02em;
+  }
 }
 
 /* ── Scroll-triggered animations ─────────────────── */
@@ -385,6 +481,24 @@ a {
 
 .script-reveal.visible {
   clip-path: inset(0 0% 0 0);
+}
+
+@media (max-width: 639px) {
+  .scroll-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .script-reveal {
+    clip-path: none;
+    transition: none;
+  }
+
+  .path-draw {
+    stroke-dashoffset: 0;
+    animation: none;
+  }
 }
 
 /* SVG path stroke draw-in */
@@ -433,4 +547,73 @@ a {
 
 .arrow-link:hover {
   gap: 0.85rem;
+}
+
+/* ── Hero takeover ────────────────────────────────── */
+
+.hero-takeover {
+  background: var(--background);
+  height: 220vh;
+  position: relative;
+}
+
+.hero-stage {
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
+  min-height: 100vh;
+  overflow: hidden;
+  position: sticky;
+  top: 0;
+}
+
+.hero-takeover-image {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  inset: -10%;
+  pointer-events: none;
+  position: absolute;
+  will-change: transform, clip-path, opacity;
+  z-index: 0;
+}
+
+.hero-stage-scrim {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--background) 94%, transparent) 0%,
+    color-mix(in srgb, var(--background) 90%, transparent) 30%,
+    color-mix(in srgb, var(--background) 18%, transparent) 66%,
+    color-mix(in srgb, var(--background) 8%, transparent) 100%
+  );
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 0;
+}
+
+.hero-takeover-content {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding-top: clamp(0.8rem, 3.6vh, 3rem);
+  position: relative;
+  z-index: 2;
+}
+
+.hero-copy-track {
+  transition: opacity 120ms linear, transform 120ms linear;
+  will-change: opacity, transform;
+}
+
+@media (max-width: 639px) {
+  .hero-takeover {
+    height: 185vh;
+  }
+
+  .hero-stage {
+    min-height: 100svh;
+  }
+
+  .hero-takeover-content {
+    padding-top: 0.35rem;
+  }
 }

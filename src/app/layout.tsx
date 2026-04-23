@@ -29,6 +29,11 @@ const caveat = Caveat({
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
+  icons: {
+    icon: [{ url: "/favicon.ico?v=2", type: "image/x-icon" }, { url: "/icon.png?v=2", type: "image/png" }],
+    shortcut: "/favicon.ico?v=2",
+    apple: "/icon.png?v=2",
+  },
   title: {
     default: "Ms Ginko | Contemporary Restaurant",
     template: "%s | Ms Ginko",
