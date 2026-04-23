@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -83,9 +84,14 @@ export function SiteHeaderClient({ user }: SiteHeaderClientProps) {
       <header className="sticky top-0 z-40 border-b border-[color-mix(in_srgb,var(--border)_40%,transparent)] bg-[var(--overlay)] backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
           <Link href="/" className="inline-flex items-center gap-2">
-            <div>
-              <p className="brand-script text-[var(--foreground)]">ms ginko</p>
-            </div>
+            <Image
+              src="/logo/logo.png"
+              alt="Miss Ginko logo"
+              width={72}
+              height={72}
+              priority
+              className="h-14 w-14 rounded-full object-cover ring-1 ring-[color-mix(in_srgb,var(--border)_45%,transparent)] sm:h-16 sm:w-16 md:h-[4.25rem] md:w-[4.25rem]"
+            />
           </Link>
 
           <nav className="hidden items-center gap-9 md:flex">
