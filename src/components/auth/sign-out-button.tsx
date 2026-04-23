@@ -13,7 +13,7 @@ export function SignOutButton() {
     setLoading(true);
     const supabase = createSupabaseBrowserClient();
     await supabase.auth.signOut();
-    router.refresh();
+    router.push("/");
     setLoading(false);
   };
 

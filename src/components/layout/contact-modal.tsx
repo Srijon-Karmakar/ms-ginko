@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 
 import { siteConfig } from "@/lib/site-data";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type ContactModalProps = {
   open: boolean;
@@ -21,21 +22,15 @@ export function ContactModal({ open, onClose }: ContactModalProps) {
     setState("sending");
     setErrorMessage("");
 
-    const response = await fetch("/api/contact", {
-      method: "POST",
-      body: JSON.stringify({
-        name: formData.get("name"),
-        email: formData.get("email"),
-        message: formData.get("message"),
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
+    const supabase = createSupabaseBrowserClient();
+    const { error } = await supabase.from("contact_messages").insert({
+      name: String(formData.get("name") ?? ""),
+      email: String(formData.get("email") ?? ""),
+      message: String(formData.get("message") ?? ""),
     });
 
-    if (!response.ok) {
-      const data = (await response.json().catch(() => null)) as { error?: string } | null;
-      setErrorMessage(data?.error ?? "Could not send your message right now.");
+    if (error) {
+      setErrorMessage(error.message ?? "Could not send your message right now.");
       setState("error");
       return;
     }

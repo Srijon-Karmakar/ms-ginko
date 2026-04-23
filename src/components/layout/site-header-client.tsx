@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { ContactModal } from "@/components/layout/contact-modal";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type HeaderUser = {
   email: string | null;
@@ -32,6 +33,50 @@ export function SiteHeaderClient({ user }: SiteHeaderClientProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
+  const [authUser, setAuthUser] = useState<HeaderUser | null>(user);
+
+  useEffect(() => {
+    let isMounted = true;
+    const supabase = createSupabaseBrowserClient();
+
+    const loadUser = async () => {
+      const {
+        data: { user: currentUser },
+      } = await supabase.auth.getUser();
+
+      if (!currentUser) {
+        if (isMounted) setAuthUser(null);
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name, role")
+        .eq("id", currentUser.id)
+        .maybeSingle();
+
+      if (!isMounted) return;
+
+      setAuthUser({
+        email: currentUser.email ?? null,
+        fullName: profile?.full_name ?? null,
+        role: profile?.role ?? "customer",
+      });
+    };
+
+    void loadUser();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(() => {
+      void loadUser();
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
 
   return (
     <>
@@ -69,10 +114,10 @@ export function SiteHeaderClient({ user }: SiteHeaderClientProps) {
 
           <div className="hidden items-center gap-3 md:flex">
             <ThemeToggle />
-            {user ? (
+            {authUser ? (
               <>
                 <Link
-                  href={user.role === "admin" ? "/admin/dashboard" : "/dashboard"}
+                  href={authUser.role === "admin" ? "/admin/dashboard" : "/dashboard"}
                   className="ui-btn-secondary px-4 py-2 text-[11px]"
                 >
                   Dashboard
@@ -121,9 +166,9 @@ export function SiteHeaderClient({ user }: SiteHeaderClientProps) {
               >
                 Gifting
               </button>
-              {user ? (
+              {authUser ? (
                 <Link
-                  href={user.role === "admin" ? "/admin/dashboard" : "/dashboard"}
+                  href={authUser.role === "admin" ? "/admin/dashboard" : "/dashboard"}
                   className="ui-btn-secondary justify-center px-4 py-2 text-center text-[11px]"
                 >
                   Dashboard

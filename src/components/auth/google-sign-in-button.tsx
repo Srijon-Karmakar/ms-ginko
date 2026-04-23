@@ -11,7 +11,7 @@ type GoogleSignInButtonProps = {
 };
 
 export function GoogleSignInButton({
-  nextPath = "/reserve",
+  nextPath = "/dashboard",
   className,
   children,
 }: GoogleSignInButtonProps) {
@@ -21,7 +21,7 @@ export function GoogleSignInButton({
     setLoading(true);
 
     const supabase = createSupabaseBrowserClient();
-    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`;
+    const redirectTo = `${window.location.origin}${nextPath}`;
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
