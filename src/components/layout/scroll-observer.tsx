@@ -6,7 +6,7 @@ export function ScrollObserver() {
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const targets = document.querySelectorAll<HTMLElement>(
-      ".scroll-reveal, .script-reveal, .path-draw"
+      ".scroll-reveal, .headline-reveal, .watermark-reveal, .script-reveal, .path-draw"
     );
 
     if (reduced) {
@@ -23,7 +23,10 @@ export function ScrollObserver() {
           }
         });
       },
-      { threshold: 0.08, rootMargin: "0px 0px -40px 0px" }
+      {
+        threshold: window.innerWidth < 640 ? 0.04 : 0.08,
+        rootMargin: window.innerWidth < 640 ? "0px 0px -24px 0px" : "0px 0px -40px 0px",
+      }
     );
 
     targets.forEach((el) => observer.observe(el));

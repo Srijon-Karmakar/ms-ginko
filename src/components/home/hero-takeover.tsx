@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 
 const heroImage =
-  "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=2200&q=80";
+  "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?auto=format&fit=crop&w=2200&q=80";
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
@@ -56,6 +56,7 @@ export function HeroTakeover() {
           style={{
             backgroundImage: `url(${heroImage})`,
             clipPath: `circle(${revealRadius}% at 50% 32%)`,
+            filter: "saturate(1.35) contrast(1.08)",
             opacity: 0.08 + progress * 0.95,
             transform: `scale(${1.16 - progress * 0.16})`,
           }}
