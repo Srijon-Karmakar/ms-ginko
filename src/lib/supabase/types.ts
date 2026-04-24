@@ -287,6 +287,26 @@ export type Database = {
           is_available: boolean;
         }[];
       };
+      get_table_availability: {
+        Args: {
+          p_reservation_date: string;
+          p_reservation_time: string;
+          p_party_size?: number;
+          p_ignore_reservation_id?: string | null;
+        };
+        Returns: {
+          id: string;
+          label: string;
+          capacity: number;
+          zone: string;
+          shape: "rect-wide" | "rect-mid" | "rect-tall" | "round";
+          layout_x: number;
+          layout_y: number;
+          layout_width: number;
+          layout_height: number;
+          is_available: boolean;
+        }[];
+      };
       mark_past_reservations_completed: {
         Args: Record<PropertyKey, never>;
         Returns: undefined;

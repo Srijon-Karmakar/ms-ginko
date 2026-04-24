@@ -4,15 +4,11 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { parseReservationTableMeta } from "@/lib/reservation-table-meta";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { Database } from "@/lib/supabase/types";
 
 type Reservation = Database["public"]["Tables"]["reservations"]["Row"] & {
   table_label?: string | null;
-};
-
-type ReservationResponse = {
-  reservations: Reservation[];
-  error?: string;
 };
 
 const getTableMeta = (booking: Reservation) => {
@@ -25,34 +21,75 @@ const getTableMeta = (booking: Reservation) => {
 
 export function AdminDashboardClient() {
   const router = useRouter();
+  const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reservations, setReservations] = useState<Reservation[]>([]);
 
   useEffect(() => {
     const loadData = async () => {
-      const response = await fetch("/api/admin/reservations", { method: "GET" });
-      const payload = (await response.json()) as ReservationResponse;
-      if (!response.ok) {
-        if (response.status === 401) {
-          router.replace("/reserve");
-          return;
-        }
-        if (response.status === 403) {
-          router.replace("/dashboard");
-          return;
-        }
-        setError(payload.error ?? "Could not load reservations.");
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        router.replace("/reserve");
+        return;
+      }
+
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (profileError) {
+        setError(profileError.message);
         setLoading(false);
         return;
       }
 
-      setReservations(payload.reservations ?? []);
+      if (profile?.role !== "admin") {
+        router.replace("/dashboard");
+        return;
+      }
+
+      await supabase.rpc("mark_past_reservations_completed");
+
+      const reservationsResult = await supabase
+        .from("reservations")
+        .select(
+          "id, user_id, table_id, guest_name, guest_email, phone, party_size, reservation_date, reservation_time, special_request, status, created_at, updated_at, cancelled_at, completed_at",
+        )
+        .order("reservation_date", { ascending: true })
+        .order("reservation_time", { ascending: true });
+
+      if (reservationsResult.error) {
+        setError(reservationsResult.error.message);
+        setLoading(false);
+        return;
+      }
+
+      const tablesResult = await supabase.from("restaurant_tables").select("id, label");
+      const tableLabelById = new Map<string, string>();
+      if (!tablesResult.error) {
+        for (const table of tablesResult.data ?? []) {
+          tableLabelById.set(table.id, table.label);
+        }
+      }
+
+      const nextReservations = (reservationsResult.data ?? []).map((reservation) => ({
+        ...reservation,
+        table_label: reservation.table_id ? tableLabelById.get(reservation.table_id) ?? null : null,
+      }));
+
+      setReservations(nextReservations);
       setLoading(false);
     };
 
     void loadData();
-  }, [router]);
+  }, [router, supabase]);
 
   const totals = useMemo(
     () => ({

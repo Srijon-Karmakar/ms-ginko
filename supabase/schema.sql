@@ -782,6 +782,63 @@ begin
 end;
 $$;
 
+create or replace function public.get_table_availability(
+  p_reservation_date date,
+  p_reservation_time time,
+  p_party_size integer default 2,
+  p_ignore_reservation_id uuid default null
+)
+returns table (
+  id text,
+  label text,
+  capacity integer,
+  zone text,
+  shape table_shape,
+  layout_x numeric,
+  layout_y numeric,
+  layout_width numeric,
+  layout_height numeric,
+  is_available boolean
+)
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+  v_effective_party_size integer := greatest(1, coalesce(p_party_size, 2));
+begin
+  if auth.uid() is null then
+    raise exception 'Authentication required.';
+  end if;
+
+  return query
+  with occupied as (
+    select r.table_id
+    from public.reservations r
+    where r.reservation_date = p_reservation_date
+      and r.reservation_time = p_reservation_time
+      and r.status in ('pending', 'confirmed')
+      and (p_ignore_reservation_id is null or r.id <> p_ignore_reservation_id)
+  )
+  select
+    t.id,
+    t.label,
+    t.capacity,
+    t.zone,
+    t.shape,
+    t.layout_x,
+    t.layout_y,
+    t.layout_width,
+    t.layout_height,
+    (t.capacity >= v_effective_party_size and occupied.table_id is null) as is_available
+  from public.restaurant_tables t
+  left join occupied on occupied.table_id = t.id
+  where t.active = true
+  order by t.id;
+end;
+$$;
+
 create index if not exists reservations_user_date_idx
   on public.reservations (user_id, reservation_date, reservation_time);
 
@@ -803,6 +860,7 @@ revoke all on function public.update_reservation(uuid, text, text, text, integer
 revoke all on function public.reschedule_reservation(uuid, text, text, text, integer, date, time, text, text) from public;
 revoke all on function public.cancel_reservation(uuid) from public;
 revoke all on function public.get_slot_availability(date, integer) from public;
+revoke all on function public.get_table_availability(date, time, integer, uuid) from public;
 revoke all on function public.mark_past_reservations_completed() from public;
 
 grant execute on function public.create_reservation(text, text, text, integer, date, time, text, text) to authenticated;
@@ -810,6 +868,7 @@ grant execute on function public.update_reservation(uuid, text, text, text, inte
 grant execute on function public.reschedule_reservation(uuid, text, text, text, integer, date, time, text, text) to authenticated;
 grant execute on function public.cancel_reservation(uuid) to authenticated;
 grant execute on function public.get_slot_availability(date, integer) to authenticated;
+grant execute on function public.get_table_availability(date, time, integer, uuid) to authenticated;
 grant execute on function public.mark_past_reservations_completed() to authenticated;
 
 alter table public.profiles enable row level security;

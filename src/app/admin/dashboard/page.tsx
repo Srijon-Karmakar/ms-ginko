@@ -1,11 +1,14 @@
-import type { Metadata } from "next";
-import { redirect } from "next/navigation";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Admin Dashboard",
-  description: "Admin overview for reservations and restaurant activity.",
-};
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
-export default async function AdminDashboardPage() {
-  redirect("/admin");
+export default function AdminDashboardPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace("/admin");
+  }, [router]);
+
+  return null;
 }

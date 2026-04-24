@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { parseReservationTableMeta } from "@/lib/reservation-table-meta";
 import { getReservationDateBounds, getReservationTimeSlots, reservationRules } from "@/lib/reservation-rules";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { Database } from "@/lib/supabase/types";
 
 type Reservation = Database["public"]["Tables"]["reservations"]["Row"];
@@ -22,6 +23,12 @@ type TableOption = {
   id: string;
   label: string;
   capacity: number;
+  zone: string;
+  shape: "rect-wide" | "rect-mid" | "rect-tall" | "round";
+  x: string;
+  y: string;
+  width: string;
+  height: string;
   isAvailable: boolean;
 };
 
@@ -40,6 +47,33 @@ const isUpcoming = (reservation: ReservationView) => {
 const editableStatuses: ReservationView["status"][] = ["pending", "confirmed"];
 const slots = getReservationTimeSlots();
 
+const normalizeDateInput = (value: string) => {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+  if (/^\d{2}-\d{2}-\d{4}$/.test(value)) {
+    const [day, month, year] = value.split("-");
+    return `${year}-${month}-${day}`;
+  }
+  return value;
+};
+
+const mapReservationError = (message: string) => {
+  if (message.includes("No seats available")) return "Selected slot is full. Please choose another time.";
+  if (message.includes("already booked") || message.includes("duplicate key value")) {
+    return "Selected table is already booked for this slot.";
+  }
+  if (message.includes("Authentication required") || message.includes("JWT")) {
+    return "Please sign in to continue.";
+  }
+  if (message.includes("permission")) return "You are not allowed to modify this reservation.";
+  if (message.includes("not found")) return "Reservation not found.";
+  if (message.includes("capacity")) return "Selected table cannot fit this party size.";
+  if (message.includes("invalid")) return "Please check date, time, and party size.";
+  return message;
+};
+
+const isFunctionMissingError = (message: string, functionName: string) =>
+  message.includes(functionName) && (message.includes("does not exist") || message.includes("Could not find"));
+
 const getTableMeta = (booking: ReservationView) => {
   const legacy = parseReservationTableMeta(booking.special_request);
   return {
@@ -50,6 +84,7 @@ const getTableMeta = (booking: ReservationView) => {
 
 export function DashboardClient() {
   const router = useRouter();
+  const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -72,20 +107,67 @@ export function DashboardClient() {
   const { min, max } = getReservationDateBounds();
 
   const fetchReservations = useCallback(async () => {
-    const response = await fetch("/api/reservations", { method: "GET" });
-    const payload = (await response.json()) as ReservationResponse;
-    return { response, payload };
-  }, []);
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return {
+        ok: false,
+        status: 401,
+        payload: { reservations: [], error: "Authentication required." } as ReservationResponse,
+      };
+    }
+
+    await supabase.rpc("mark_past_reservations_completed");
+
+    const reservationsResult = await supabase
+      .from("reservations")
+      .select(
+        "id, user_id, table_id, guest_name, guest_email, phone, party_size, reservation_date, reservation_time, special_request, status, created_at, updated_at, cancelled_at, completed_at",
+      )
+      .eq("user_id", user.id)
+      .order("reservation_date", { ascending: true })
+      .order("reservation_time", { ascending: true });
+
+    if (reservationsResult.error) {
+      return {
+        ok: false,
+        status: 400,
+        payload: { reservations: [], error: reservationsResult.error.message } as ReservationResponse,
+      };
+    }
+
+    const tablesResult = await supabase.from("restaurant_tables").select("id, label");
+    const tableLabelById = new Map<string, string>();
+    if (!tablesResult.error) {
+      for (const table of tablesResult.data ?? []) {
+        tableLabelById.set(table.id, table.label);
+      }
+    }
+
+    const reservations = (reservationsResult.data ?? []).map((reservation) => ({
+      ...reservation,
+      table_label: reservation.table_id ? tableLabelById.get(reservation.table_id) ?? null : null,
+    }));
+
+    return {
+      ok: true,
+      status: 200,
+      payload: { reservations } as ReservationResponse,
+    };
+  }, [supabase]);
 
   useEffect(() => {
     let isMounted = true;
 
     const bootstrap = async () => {
-      const { response, payload } = await fetchReservations();
+      const { ok, status, payload } = await fetchReservations();
       if (!isMounted) return;
 
-      if (!response.ok) {
-        if (response.status === 401) {
+      if (!ok) {
+        if (status === 401) {
           router.replace("/reserve");
           return;
         }
@@ -109,9 +191,9 @@ export function DashboardClient() {
     setLoading(true);
     setError(null);
 
-    const { response, payload } = await fetchReservations();
-    if (!response.ok) {
-      if (response.status === 401) {
+    const { ok, status, payload } = await fetchReservations();
+    if (!ok) {
+      if (status === 401) {
         router.replace("/reserve");
         return;
       }
@@ -131,26 +213,36 @@ export function DashboardClient() {
     const loadTableOptions = async () => {
       setLoadingTableOptions(true);
       try {
-        const params = new URLSearchParams({
-          date: draft.reservationDate,
-          time: draft.reservationTime,
-          partySize: String(draft.partySize),
-          ignoreReservationId: editingId,
+        const { data, error } = await supabase.rpc("get_table_availability", {
+          p_reservation_date: normalizeDateInput(draft.reservationDate),
+          p_reservation_time: draft.reservationTime,
+          p_party_size: draft.partySize,
+          p_ignore_reservation_id: editingId,
         });
 
-        const response = await fetch(`/api/reservations/tables?${params.toString()}`, {
-          method: "GET",
-          signal: controller.signal,
-        });
-        const payload = (await response.json()) as { error?: string; tables?: TableOption[] };
-
-        if (!response.ok) {
+        if (controller.signal.aborted) return;
+        if (error) {
           setTableOptions([]);
-          setActionError(payload.error ?? "Could not load table options.");
+          if (isFunctionMissingError(error.message, "get_table_availability")) {
+            setActionError("Table availability function is missing. Please run latest schema.sql.");
+          } else {
+            setActionError(mapReservationError(error.message) || "Could not load table options.");
+          }
           return;
         }
 
-        const options = payload.tables ?? [];
+        const options: TableOption[] = (data ?? []).map((table) => ({
+          id: table.id,
+          label: table.label,
+          capacity: Number(table.capacity),
+          zone: table.zone,
+          shape: table.shape,
+          x: `${Number(table.layout_x)}%`,
+          y: `${Number(table.layout_y)}%`,
+          width: `${Number(table.layout_width)}%`,
+          height: `${Number(table.layout_height)}%`,
+          isAvailable: Boolean(table.is_available),
+        }));
         setTableOptions(options);
 
         setDraft((prev) => {
@@ -177,7 +269,7 @@ export function DashboardClient() {
     return () => {
       controller.abort();
     };
-  }, [draft.partySize, draft.reservationDate, draft.reservationTime, editingId]);
+  }, [draft.partySize, draft.reservationDate, draft.reservationTime, editingId, supabase]);
 
   const upcomingReservations = useMemo(() => reservations.filter(isUpcoming), [reservations]);
   const pastReservations = useMemo(() => reservations.filter((reservation) => !isUpcoming(reservation)), [reservations]);
@@ -205,19 +297,21 @@ export function DashboardClient() {
     setActionError(null);
     setActionInfo(null);
 
-    const response = await fetch(`/api/reservations/${reservationId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        action: "edit",
-        ...draft,
-      }),
+    const { error } = await supabase.rpc("reschedule_reservation", {
+      p_reservation_id: reservationId,
+      p_guest_name: draft.guestName,
+      p_guest_email: draft.guestEmail || null,
+      p_phone: draft.phone,
+      p_party_size: draft.partySize,
+      p_reservation_date: normalizeDateInput(draft.reservationDate),
+      p_reservation_time: draft.reservationTime,
+      p_table_id: draft.selectedTableId,
+      p_special_request: draft.specialRequest || null,
     });
-    const payload = (await response.json()) as { error?: string };
 
     setActionId(null);
-    if (!response.ok) {
-      setActionError(payload.error ?? "Could not update reservation.");
+    if (error) {
+      setActionError(mapReservationError(error.message) || "Could not update reservation.");
       return;
     }
 
@@ -232,16 +326,13 @@ export function DashboardClient() {
     setActionError(null);
     setActionInfo(null);
 
-    const response = await fetch(`/api/reservations/${reservationId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "cancel" }),
+    const { error } = await supabase.rpc("cancel_reservation", {
+      p_reservation_id: reservationId,
     });
-    const payload = (await response.json()) as { error?: string };
 
     setActionId(null);
-    if (!response.ok) {
-      setActionError(payload.error ?? "Could not cancel reservation.");
+    if (error) {
+      setActionError(mapReservationError(error.message) || "Could not cancel reservation.");
       return;
     }
 

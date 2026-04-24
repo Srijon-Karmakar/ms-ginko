@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 
 import { getReservationDateBounds, reservationRules, validateReservationPayload } from "@/lib/reservation-rules";
 import { restaurantTables as fallbackTables } from "@/lib/restaurant-tables";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type ReservationFormProps = {
   userEmail: string;
@@ -32,16 +33,6 @@ type TableAvailability = {
 
 type TableVisualState = "available" | "booked" | "selected";
 
-const safeJson = async <T,>(response: Response): Promise<T> => {
-  const text = await response.text();
-  if (!text) return {} as T;
-  try {
-    return JSON.parse(text) as T;
-  } catch {
-    return {} as T;
-  }
-};
-
 const normalizeDateInput = (value: string) => {
   if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
   if (/^\d{2}-\d{2}-\d{4}$/.test(value)) {
@@ -49,6 +40,31 @@ const normalizeDateInput = (value: string) => {
     return `${year}-${month}-${day}`;
   }
   return value;
+};
+
+const formatTime = (value: unknown) => {
+  if (typeof value === "string") return value.slice(0, 5);
+  if (value instanceof Date) return value.toISOString().slice(11, 16);
+  return "";
+};
+
+const normalizeTableShape = (shape: string): TableShape =>
+  shape === "rect-wide" || shape === "rect-mid" || shape === "rect-tall" || shape === "round"
+    ? shape
+    : "rect-mid";
+
+const isFunctionMissingError = (message: string, functionName: string) =>
+  message.includes(functionName) && (message.includes("does not exist") || message.includes("Could not find"));
+
+const mapReservationError = (message: string) => {
+  if (message.includes("No seats available")) return "Selected slot is full. Please choose another time.";
+  if (message.includes("already booked") || message.includes("duplicate key value")) {
+    return "Selected table is already booked for this slot.";
+  }
+  if (message.includes("Authentication required")) return "Please sign in to continue.";
+  if (message.includes("capacity")) return "Selected table cannot fit this party size.";
+  if (message.includes("invalid")) return "Please check date, time, and party size.";
+  return message;
 };
 
 const formatShortDate = (date: Date) => {
@@ -194,6 +210,7 @@ function TableCard({
 
 export function ReservationForm({ userEmail }: ReservationFormProps) {
   const { min, max } = getReservationDateBounds();
+  const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const [isPending, setIsPending] = useState(false);
 
   const [loadingAvailability, setLoadingAvailability] = useState(false);
@@ -239,24 +256,23 @@ export function ReservationForm({ userEmail }: ReservationFormProps) {
       setLoadingAvailability(true);
       setAvailabilityError("");
       try {
-        const params = new URLSearchParams({
-          date: normalizeDateInput(reservationDate),
-          partySize: String(partySize),
+        const { data, error } = await supabase.rpc("get_slot_availability", {
+          p_reservation_date: normalizeDateInput(reservationDate),
+          p_party_size: partySize,
         });
 
-        const response = await fetch(`/api/reservations/availability?${params.toString()}`, {
-          method: "GET",
-          signal: controller.signal,
-        });
-
-        const payload = await safeJson<{ error?: string; slots?: AvailabilitySlot[] }>(response);
-        if (!response.ok) {
+        if (controller.signal.aborted) return;
+        if (error) {
           setSlots([]);
-          setAvailabilityError(payload.error ?? "Could not load availability.");
+          setAvailabilityError(mapReservationError(error.message) || "Could not load availability.");
           return;
         }
 
-        const nextSlots = payload.slots ?? [];
+        const nextSlots = (data ?? []).map((item) => ({
+          slotTime: formatTime(item.slot_time),
+          availableSeats: Number(item.available_seats ?? 0),
+          isAvailable: Boolean(item.is_available),
+        }));
         setSlots(nextSlots);
         setReservationTime((current) =>
           nextSlots.some((slot) => slot.slotTime === current && slot.isAvailable) ? current : "",
@@ -276,7 +292,7 @@ export function ReservationForm({ userEmail }: ReservationFormProps) {
     return () => {
       controller.abort();
     };
-  }, [partySize, reservationDate]);
+  }, [partySize, reservationDate, supabase]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -285,29 +301,65 @@ export function ReservationForm({ userEmail }: ReservationFormProps) {
       setLoadingTables(true);
       setTableError("");
       try {
-        const params = new URLSearchParams({
-          partySize: String(partySize),
-        });
-        if (reservationDate) {
-          params.set("date", normalizeDateInput(reservationDate));
-        }
-        if (reservationTime) {
-          params.set("time", reservationTime);
-        }
+        const { data: rawTables, error: tablesError } = await supabase
+          .from("restaurant_tables")
+          .select("id, label, capacity, zone, shape, layout_x, layout_y, layout_width, layout_height")
+          .eq("active", true)
+          .order("id", { ascending: true });
 
-        const response = await fetch(`/api/reservations/tables?${params.toString()}`, {
-          method: "GET",
-          signal: controller.signal,
-        });
-
-        const payload = await safeJson<{ error?: string; tables?: TableAvailability[] }>(response);
-        if (!response.ok) {
+        if (controller.signal.aborted) return;
+        if (tablesError) {
           setTables([]);
-          setTableError(payload.error ?? "Could not load table layout.");
+          setTableError(tablesError.message || "Could not load table layout.");
           return;
         }
 
-        const nextTables = payload.tables ?? [];
+        let nextTables: TableAvailability[] = (rawTables ?? []).map((table) => ({
+          id: table.id,
+          label: table.label,
+          capacity: Number(table.capacity),
+          zone: table.zone,
+          shape: normalizeTableShape(table.shape),
+          x: `${Number(table.layout_x)}%`,
+          y: `${Number(table.layout_y)}%`,
+          width: `${Number(table.layout_width)}%`,
+          height: `${Number(table.layout_height)}%`,
+          isAvailable: Number(table.capacity) >= partySize,
+        }));
+
+        if (reservationDate && reservationTime) {
+          const { data: availabilityRows, error: availabilityError } = await supabase.rpc(
+            "get_table_availability",
+            {
+              p_reservation_date: normalizeDateInput(reservationDate),
+              p_reservation_time: reservationTime,
+              p_party_size: partySize,
+            },
+          );
+
+          if (controller.signal.aborted) return;
+          if (availabilityError) {
+            if (isFunctionMissingError(availabilityError.message, "get_table_availability")) {
+              setTableError("Table availability is not configured yet. Please run latest schema.sql.");
+            } else {
+              setTableError(availabilityError.message || "Could not load table layout.");
+            }
+          } else {
+            nextTables = (availabilityRows ?? []).map((table) => ({
+              id: table.id,
+              label: table.label,
+              capacity: Number(table.capacity),
+              zone: table.zone,
+              shape: normalizeTableShape(table.shape),
+              x: `${Number(table.layout_x)}%`,
+              y: `${Number(table.layout_y)}%`,
+              width: `${Number(table.layout_width)}%`,
+              height: `${Number(table.layout_height)}%`,
+              isAvailable: Boolean(table.is_available),
+            }));
+          }
+        }
+
         setTables(nextTables);
         setSelectedTableId((current) =>
           nextTables.some((table) => table.id === current && table.isAvailable) ? current : "",
@@ -327,7 +379,7 @@ export function ReservationForm({ userEmail }: ReservationFormProps) {
     return () => {
       controller.abort();
     };
-  }, [partySize, reservationDate, reservationTime]);
+  }, [partySize, reservationDate, reservationTime, supabase]);
 
   const selectedSlot = useMemo(
     () => slots.find((slot) => slot.slotTime === reservationTime) ?? null,
@@ -392,18 +444,20 @@ export function ReservationForm({ userEmail }: ReservationFormProps) {
     setIsPending(true);
     setState({ ok: false, message: "" });
 
-    const response = await fetch("/api/reservations", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
+    const { error } = await supabase.rpc("create_reservation", {
+      p_guest_name: payload.guestName,
+      p_guest_email: payload.guestEmail || null,
+      p_phone: payload.phone,
+      p_party_size: payload.partySize,
+      p_reservation_date: payload.reservationDate,
+      p_reservation_time: payload.reservationTime,
+      p_table_id: payload.selectedTableId,
+      p_special_request: payload.specialRequest || null,
     });
-    const result = await safeJson<{ error?: string }>(response);
 
     setIsPending(false);
-    if (!response.ok) {
-      setState({ ok: false, message: result.error ?? "Could not create reservation." });
+    if (error) {
+      setState({ ok: false, message: mapReservationError(error.message) || "Could not create reservation." });
       return;
     }
 
