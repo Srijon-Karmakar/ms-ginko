@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Barlow_Condensed, Caveat, Manrope } from "next/font/google";
+import Script from "next/script";
 
 import { ScrollObserver } from "@/components/layout/scroll-observer";
 import { ScrollTypographyBackground } from "@/components/layout/scroll-typography-background";
@@ -90,10 +91,10 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${barlowCondensed.variable} ${manrope.variable} ${caveat.variable} h-full antialiased`}
     >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-      </head>
       <body className="min-h-full">
+        <Script id="theme-init" strategy="beforeInteractive">
+          {themeInitScript}
+        </Script>
         <div className="site-shell relative min-h-screen overflow-x-clip">
           <ScrollObserver />
           <ScrollTypographyBackground />

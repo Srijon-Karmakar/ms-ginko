@@ -111,7 +111,7 @@ export function HeroTakeover() {
               className="reveal-text text-3xl font-bold italic leading-tight text-[var(--foreground)] sm:text-5xl lg:text-[3.4rem]"
               style={{ fontFamily: "var(--font-display), sans-serif" }}
             >
-              Australian Brunch & Coffee Shop in the Heart of the City
+              Indian Brunch & Coffee Shop in the Heart of the City
             </h1>
             <div className="space-y-4 lg:pt-3">
               <p className="reveal-text ui-copy text-lg leading-8 sm:text-xl" style={{ animationDelay: "140ms" }}>

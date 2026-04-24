@@ -3,86 +3,26 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-import { SignOutButton } from "@/components/auth/sign-out-button";
 import { ContactModal } from "@/components/layout/contact-modal";
-import { ThemeToggle } from "@/components/layout/theme-toggle";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-
-type HeaderUser = {
-  email: string | null;
-  fullName: string | null;
-  role: "customer" | "admin";
-};
-
-type SiteHeaderClientProps = {
-  user: HeaderUser | null;
-};
 
 const navLinks = [
   { label: "Home", href: "/" },
-  { label: "Coffee", href: "/menu", meta: "12:00 - 15:00" },
-  { label: "Brunch", href: "/menu", meta: "18:00 - 22:30" },
-  { label: "Haven", href: "/about" },
+  { label: "Menu", href: "/menu" },
+  { label: "About", href: "/about" },
+  { label: "Gallery", href: "/#gallery" },
 ];
 
-const linkStyle =
-  "text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted)] transition hover:text-[var(--foreground)]";
-
-export function SiteHeaderClient({ user }: SiteHeaderClientProps) {
+export function SiteHeaderClient() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
-  const [authUser, setAuthUser] = useState<HeaderUser | null>(user);
-
-  useEffect(() => {
-    let isMounted = true;
-    const supabase = createSupabaseBrowserClient();
-
-    const loadUser = async () => {
-      const {
-        data: { user: currentUser },
-      } = await supabase.auth.getUser();
-
-      if (!currentUser) {
-        if (isMounted) setAuthUser(null);
-        return;
-      }
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("full_name, role")
-        .eq("id", currentUser.id)
-        .maybeSingle();
-
-      if (!isMounted) return;
-
-      setAuthUser({
-        email: currentUser.email ?? null,
-        fullName: profile?.full_name ?? null,
-        role: profile?.role ?? "customer",
-      });
-    };
-
-    void loadUser();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(() => {
-      void loadUser();
-    });
-
-    return () => {
-      isMounted = false;
-      subscription.unsubscribe();
-    };
-  }, []);
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-[color-mix(in_srgb,var(--border)_40%,transparent)] bg-[var(--overlay)] backdrop-blur-xl">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
+      <header className="sticky top-0 z-40 border-none bg-transparent pt-3 sm:pt-4">
+        <div className="flex w-full items-center justify-between gap-3 bg-[color-mix(in_srgb,var(--background)_18%,transparent)] px-3 py-3 backdrop-blur-xl sm:gap-4 sm:px-6 sm:py-3.5">
           <Link href="/" className="inline-flex items-center gap-2">
             <Image
               src="/logo/logo.png"
@@ -90,58 +30,48 @@ export function SiteHeaderClient({ user }: SiteHeaderClientProps) {
               width={72}
               height={72}
               priority
-              className="h-14 w-14 rounded-full object-cover ring-1 ring-[color-mix(in_srgb,var(--border)_45%,transparent)] sm:h-16 sm:w-16 md:h-[4.25rem] md:w-[4.25rem]"
+              className="h-11 w-11 rounded-full object-cover sm:h-14 sm:w-14 md:h-16 md:w-16"
             />
           </Link>
 
-          <nav className="hidden items-center gap-9 md:flex">
+          <nav className="hidden items-center gap-7 lg:flex">
             {navLinks.map((link) => (
               <Link
                 key={`${link.label}-${link.href}`}
                 href={link.href}
-                className={`${linkStyle} ${pathname === link.href ? "text-[var(--foreground)]" : ""}`}
+                className={`nav-link-glass ${
+                  (link.href === "/" && pathname === "/") ||
+                  (link.href === "/menu" && pathname.startsWith("/menu")) ||
+                  (link.href === "/about" && pathname.startsWith("/about"))
+                    ? "nav-link-active"
+                    : ""
+                }`}
               >
-                <span className="block">{link.label}</span>
-                {"meta" in link && link.meta ? (
-                  <span className="mt-1 block text-[10px] font-medium tracking-[0.02em] text-[var(--muted)] normal-case">
-                    {link.meta}
-                  </span>
-                ) : null}
+                {link.label}
               </Link>
             ))}
             <button
               type="button"
               onClick={() => setContactOpen(true)}
-              className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted)] transition hover:text-[var(--foreground)]"
+              className="nav-link-glass"
             >
-              Gifting
+              Contact
             </button>
           </nav>
 
-          <div className="hidden items-center gap-3 md:flex">
-            <ThemeToggle />
-            {authUser ? (
-              <>
-                <Link
-                  href={authUser.role === "admin" ? "/admin/dashboard" : "/dashboard"}
-                  className="ui-btn-secondary px-4 py-2 text-[11px]"
-                >
-                  Dashboard
-                </Link>
-                <SignOutButton />
-              </>
-            ) : (
-              <Link href="/reserve" className="ui-btn-primary px-6 py-2 text-[11px]">
-                Reserve
-              </Link>
-            )}
+          <div className="hidden items-center lg:flex">
+            <Link href="/reserve" className="ui-btn-primary px-6 py-2.5 text-[12px]">
+              Book Table
+            </Link>
           </div>
 
-          <div className="flex items-center gap-2 md:hidden">
-            <ThemeToggle />
+          <div className="flex items-center gap-2 lg:hidden">
+            <Link href="/reserve" className="ui-btn-primary px-4 py-2 text-[11px]">
+              Book Table
+            </Link>
             <button
               type="button"
-              className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--foreground)]"
+              className="rounded-lg bg-[color-mix(in_srgb,var(--background)_24%,transparent)] px-3 py-2 text-[13px] font-semibold uppercase tracking-[0.16em] text-[var(--foreground)]"
               onClick={() => setMobileOpen((value) => !value)}
             >
               Menu
@@ -150,40 +80,30 @@ export function SiteHeaderClient({ user }: SiteHeaderClientProps) {
         </div>
 
         {mobileOpen ? (
-          <div className="border-t border-[color-mix(in_srgb,var(--border)_40%,transparent)] bg-[var(--surface)] px-4 py-4 md:hidden">
+          <div className="mt-2 w-full bg-[color-mix(in_srgb,var(--background)_18%,transparent)] px-4 py-4 backdrop-blur-xl lg:hidden">
             <div className="flex flex-col gap-4">
               {navLinks.map((link) => (
                 <Link
                   key={`${link.label}-${link.href}`}
                   href={link.href}
                   onClick={() => setMobileOpen(false)}
-                  className={`${linkStyle} ${pathname === link.href ? "text-[var(--foreground)]" : ""}`}
+                  className={`nav-link-glass nav-link-mobile ${
+                    pathname === link.href ? "nav-link-active" : ""
+                  }`}
                 >
                   {link.label}
                 </Link>
               ))}
               <button
                 type="button"
-                className={`${linkStyle} text-left`}
+                className="nav-link-glass nav-link-mobile text-left"
                 onClick={() => {
                   setContactOpen(true);
                   setMobileOpen(false);
                 }}
               >
-                Gifting
+                Contact
               </button>
-              {authUser ? (
-                <Link
-                  href={authUser.role === "admin" ? "/admin/dashboard" : "/dashboard"}
-                  className="ui-btn-secondary justify-center px-4 py-2 text-center text-[11px]"
-                >
-                  Dashboard
-                </Link>
-              ) : (
-                <Link href="/reserve" className="ui-btn-primary justify-center px-4 py-2 text-center text-[11px]">
-                  Reserve
-                </Link>
-              )}
             </div>
           </div>
         ) : null}

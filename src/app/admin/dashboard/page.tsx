@@ -1,13 +1,11 @@
 import type { Metadata } from "next";
-
-import { AdminDashboardClient } from "@/app/admin/dashboard/admin-dashboard-client";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard",
   description: "Admin overview for reservations and restaurant activity.",
 };
 
-export default function AdminDashboardPage() {
-  return <AdminDashboardClient />;
+export default async function AdminDashboardPage() {
+  redirect("/admin");
 }
-

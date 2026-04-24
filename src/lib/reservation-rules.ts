@@ -1,14 +1,11 @@
-const LUNCH_WINDOW = { start: "12:00", end: "15:00" };
-const DINNER_WINDOW = { start: "18:00", end: "22:30" };
-
 export const reservationRules = {
   minLeadDays: 0,
   maxAdvanceDays: 30,
   slotIntervalMinutes: 30,
   minPartySize: 1,
-  maxPartySize: 12,
-  closedWeekday: 1,
-  windows: [LUNCH_WINDOW, DINNER_WINDOW],
+  maxPartySize: 6,
+  openingTime: "10:00",
+  closingTime: "22:00",
 };
 
 const minutesFromTime = (value: string) => {
@@ -22,6 +19,30 @@ const parseLocalDate = (value: string) => {
 };
 
 const dateOnly = (value: Date) => new Date(value.getFullYear(), value.getMonth(), value.getDate());
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const buildSlots = () => {
+  const [openingHour, openingMinute] = reservationRules.openingTime.split(":").map(Number);
+  const [closingHour, closingMinute] = reservationRules.closingTime.split(":").map(Number);
+
+  const start = openingHour * 60 + openingMinute;
+  const end = closingHour * 60 + closingMinute;
+  const values: string[] = [];
+
+  for (let minute = start; minute <= end; minute += reservationRules.slotIntervalMinutes) {
+    const hours = Math.floor(minute / 60)
+      .toString()
+      .padStart(2, "0");
+    const mins = (minute % 60).toString().padStart(2, "0");
+    values.push(`${hours}:${mins}`);
+  }
+
+  return values;
+};
+
+const slots = buildSlots();
+
+export const getReservationTimeSlots = () => slots;
 
 export const getReservationDateBounds = () => {
   const today = dateOnly(new Date());
@@ -48,7 +69,7 @@ export const isValidReservationDate = (dateValue: string) => {
     return false;
   }
 
-  return date.getDay() !== reservationRules.closedWeekday;
+  return true;
 };
 
 export const isValidReservationTime = (timeValue: string) => {
@@ -60,15 +81,14 @@ export const isValidReservationTime = (timeValue: string) => {
     return false;
   }
 
-  return reservationRules.windows.some((window) => {
-    const start = minutesFromTime(window.start);
-    const end = minutesFromTime(window.end);
-    return totalMinutes >= start && totalMinutes <= end;
-  });
+  const start = minutesFromTime(reservationRules.openingTime);
+  const end = minutesFromTime(reservationRules.closingTime);
+  return totalMinutes >= start && totalMinutes <= end;
 };
 
 export const validateReservationPayload = (input: {
   guestName: string;
+  guestEmail?: string;
   phone: string;
   partySize: number;
   reservationDate: string;
@@ -78,6 +98,10 @@ export const validateReservationPayload = (input: {
 
   if (input.guestName.trim().length < 2) {
     errors.push("Guest name is too short.");
+  }
+
+  if (input.guestEmail && !emailPattern.test(input.guestEmail.trim())) {
+    errors.push("Email is invalid.");
   }
 
   if (input.phone.trim().length < 8) {

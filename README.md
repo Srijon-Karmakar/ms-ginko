@@ -39,6 +39,7 @@ cp .env.example .env.local
 - `NEXT_PUBLIC_SITE_URL`
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY` (required for global slot/table availability checks in API routes)
 
 4. In Supabase SQL editor, run:
 
@@ -69,12 +70,13 @@ Open `http://localhost:3000`.
 
 ## Reservation Rules
 
-- Closed on Monday
-- Lunch: `12:00-15:00`
-- Dinner: `18:00-22:30`
+- Open daily: `10:00-22:00`
 - Slot interval: `30` minutes
 - Booking window: `30` days in advance
-- Party size: `1-12`
+- Party size: `1-6`
+- Auto-confirm: reservation is confirmed only when capacity is available
+- Customer controls: edit and cancel for active reservations
+- Table layout: guest selects a specific table and seat count before confirm
 
 ## Project Structure
 

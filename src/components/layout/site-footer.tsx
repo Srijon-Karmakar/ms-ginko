@@ -1,10 +1,16 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import { siteConfig } from "@/lib/site-data";
 
 export function SiteFooter() {
+  const pathname = usePathname();
+  if (pathname !== "/") return null;
+
   return (
-    <footer className="relative z-10 border-t border-[color-mix(in_srgb,var(--border)_50%,transparent)] bg-[var(--surface-alt)]">
+    <footer className="relative border-t border-[color-mix(in_srgb,var(--border)_50%,transparent)] bg-[var(--surface-alt)]">
       <div className="pointer-events-none absolute inset-x-0 top-16 flex justify-center">
         <p className="footer-script script-reveal">See ya!</p>
       </div>
