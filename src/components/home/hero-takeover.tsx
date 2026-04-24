@@ -2,8 +2,7 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 
-const heroImage =
-  "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?auto=format&fit=crop&w=2200&q=80";
+const heroVideo = "/video/hero1.mp4";
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
@@ -44,27 +43,29 @@ export function HeroTakeover() {
     };
   }, []);
 
-  const revealRadius = 8 + progress * 155;
-  const contentOpacity = clamp(1 - progress * 1.15, 0, 1);
+  const contentOpacity = clamp(1 - progress * 1.25, 0, 1);
   const contentLift = progress * -36;
+  const wordScale = 1 + progress * 5.6;
+  const wordOpacity = clamp(1 - progress * 0.08, 0.92, 1);
+  const prefixOpacity = clamp(1 - progress * 3.2, 0, 1);
 
   return (
     <section ref={sectionRef} className="hero-takeover">
       <div className="hero-stage">
-        <div
-          className="hero-takeover-image"
-          style={{
-            backgroundImage: `url(${heroImage})`,
-            clipPath: `circle(${revealRadius}% at 50% 32%)`,
-            filter: "saturate(1.35) contrast(1.08)",
-            opacity: 0.08 + progress * 0.95,
-            transform: `scale(${1.16 - progress * 0.16})`,
-          }}
+        <video
+          className="hero-takeover-video"
+          src={heroVideo}
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="metadata"
+          aria-hidden="true"
         />
-        <div className="hero-stage-scrim" />
+        <div className="hero-stage-scrim" aria-hidden="true" />
 
         <div
-          className="hero-takeover-lines pointer-events-none absolute inset-0 z-[1] hidden overflow-hidden sm:block"
+          className="hero-takeover-lines pointer-events-none absolute inset-0 z-[2] hidden overflow-hidden sm:block"
           aria-hidden="true"
         >
           <svg
@@ -90,17 +91,18 @@ export function HeroTakeover() {
           <div
             style={
               {
-                opacity: clamp(1 - progress * 0.95, 0.12, 1),
-                transform: `translateY(${progress * -22}px)`,
+                opacity: wordOpacity,
+                transform: `translateY(${progress * -24}px) scale(${wordScale})`,
+                transformOrigin: "center 34%",
                 "--hero-progress": progress,
               } as CSSProperties
             }
           >
-            <p className="hero-prefix" aria-hidden="true">
+            <p className="hero-prefix" aria-hidden="true" style={{ opacity: prefixOpacity }}>
               MISS
             </p>
             <div className="hero-letters overflow-hidden" aria-label="Ginko">
-              <span aria-hidden="true" className="photo-word" style={{ backgroundImage: `url(${heroImage})` }}>
+              <span aria-hidden="true" className="hero-zoom-word">
                 GINKO
               </span>
             </div>

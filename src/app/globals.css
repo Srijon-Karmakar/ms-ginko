@@ -275,6 +275,24 @@ a {
   padding: 0.46rem 0.2rem;
 }
 
+.header-gradient {
+  --foreground: #f6f6f6;
+}
+
+.header-gradient .nav-link-glass {
+  color: rgba(246, 246, 246, 0.9);
+}
+
+.header-gradient .nav-link-glass:hover,
+.header-gradient .nav-link-glass:focus-visible,
+.header-gradient .nav-link-glass.nav-link-active {
+  color: #ffffff;
+}
+
+.header-gradient .nav-link-glass::after {
+  background: color-mix(in srgb, var(--accent) 68%, #ffffff);
+}
+
 @media (max-width: 639px) {
   .nav-link-glass {
     font-size: 0.92rem;
@@ -438,6 +456,58 @@ a {
   -webkit-text-fill-color: transparent;
 }
 
+.hero-zoom-word {
+  color: color-mix(in srgb, #fff 92%, var(--accent));
+  display: block;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(6.8rem, 32vw, 22rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 0.78;
+  text-align: center;
+  text-transform: uppercase;
+  width: 100%;
+}
+
+.photo-word-video {
+  display: block;
+  height: auto;
+  margin: 0 auto;
+  overflow: visible;
+  width: min(100%, 75rem);
+}
+
+.photo-word-video-text {
+  fill: #000;
+  font-family: var(--font-display), sans-serif;
+  font-size: 21rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 0.78;
+  text-transform: uppercase;
+}
+
+.photo-word-video-fill {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent) 26%, var(--surface-elevated)),
+    color-mix(in srgb, var(--foreground) 22%, var(--surface-elevated))
+  );
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.photo-word-video-media {
+  display: block;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  width: 100%;
+}
+
 .hero-letters-wrap {
   padding-top: 0;
 }
@@ -479,6 +549,23 @@ a {
     line-height: 0.76;
     transform: scaleX(1.12);
     transform-origin: center;
+  }
+
+  .hero-zoom-word {
+    font-size: clamp(7.2rem, 33vw, 13rem);
+    letter-spacing: -0.03em;
+    line-height: 0.76;
+    transform: scaleX(1.12);
+    transform-origin: center;
+  }
+
+  .photo-word-video {
+    width: 100%;
+  }
+
+  .photo-word-video-text {
+    font-size: 22.4rem;
+    letter-spacing: -0.03em;
   }
 }
 
@@ -720,6 +807,17 @@ a {
   top: 0;
 }
 
+.hero-takeover-video {
+  height: 100%;
+  inset: 0;
+  object-fit: cover;
+  object-position: center;
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
+  z-index: 0;
+}
+
 .hero-takeover-image {
   background-position: center;
   background-repeat: no-repeat;
@@ -734,24 +832,24 @@ a {
 .hero-stage-scrim {
   background: linear-gradient(
     to bottom,
-    color-mix(in srgb, var(--background) 94%, transparent) 0%,
-    color-mix(in srgb, var(--background) 90%, transparent) 30%,
-    color-mix(in srgb, var(--background) 18%, transparent) 66%,
-    color-mix(in srgb, var(--background) 8%, transparent) 100%
+    color-mix(in srgb, #000 8%, transparent) 0%,
+    color-mix(in srgb, #000 10%, transparent) 35%,
+    color-mix(in srgb, var(--background) 16%, transparent) 72%,
+    color-mix(in srgb, var(--background) 6%, transparent) 100%
   );
   inset: 0;
   pointer-events: none;
   position: absolute;
-  z-index: 0;
+  z-index: 1;
 }
 
 .hero-takeover-content {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  padding-top: clamp(0.8rem, 3.6vh, 3rem);
+  padding-top: clamp(5rem, 12vh, 8rem);
   position: relative;
-  z-index: 2;
+  z-index: 3;
 }
 
 .hero-copy-track {
@@ -769,6 +867,6 @@ a {
   }
 
   .hero-takeover-content {
-    padding-top: 0.35rem;
+    padding-top: 4.5rem;
   }
 }
