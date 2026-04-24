@@ -1,21 +1,57 @@
-import Image from "next/image";
 import Link from "next/link";
 
 import { HeroTakeover } from "@/components/home/hero-takeover";
+import { HorizontalGalleryRail } from "@/components/home/horizontal-gallery-rail";
 import { siteConfig, testimonials } from "@/lib/site-data";
 
 const galleryPhotos = [
   {
-    src: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&q=75",
+    src: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1800&q=80",
     alt: "Warmly lit cafe interior",
   },
   {
-    src: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=1200&q=75",
+    src: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&w=1800&q=80",
     alt: "Pancakes with strawberry sauce",
   },
   {
-    src: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=1200&q=75",
+    src: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=1800&q=80",
     alt: "Salmon dish with fresh herbs",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1551218808-94e220e084d2?auto=format&fit=crop&w=1800&q=80",
+    alt: "Chef plating a gourmet dish",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1800&q=80",
+    alt: "Fine dining table setting with wine glasses",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?auto=format&fit=crop&w=1800&q=80",
+    alt: "Brunch spread with coffee and pastries",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1521017432531-fbd92d768814?auto=format&fit=crop&w=1800&q=80",
+    alt: "Specialty coffee poured into cup",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1499028344343-cd173ffc68a9?auto=format&fit=crop&w=1800&q=80",
+    alt: "Freshly prepared brunch plate",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1800&q=80",
+    alt: "Restaurant kitchen and plated meals",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?auto=format&fit=crop&w=1800&q=80",
+    alt: "Wooden table with artisanal dishes",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=1800&q=80",
+    alt: "Colorful salad and healthy brunch bowl",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1457666134378-6b77915bd5f2?auto=format&fit=crop&w=1800&q=80",
+    alt: "Coffee bar with pour-over equipment",
   },
 ];
 
@@ -393,27 +429,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section
-        id="gallery"
-        className="flex gap-2 overflow-x-auto px-3 sm:gap-0 sm:overflow-hidden sm:px-0"
-        style={{ height: "clamp(190px, 40vw, 520px)" }}
-      >
-        {galleryPhotos.map((photo, i) => (
-          <div
-            key={photo.src}
-            className="relative min-w-[78%] overflow-hidden rounded-md sm:min-w-0 sm:flex-1 sm:rounded-none"
-          >
-            <Image
-              src={photo.src}
-              alt={photo.alt}
-              fill
-              className="object-cover transition-transform duration-700 hover:scale-105"
-              sizes="33vw"
-              priority={i === 0}
-            />
-          </div>
-        ))}
-      </section>
+      <HorizontalGalleryRail photos={galleryPhotos} />
 
       <section id="reservation" className="bg-[var(--background)] py-10 sm:py-14">
         <div className="page-inner">

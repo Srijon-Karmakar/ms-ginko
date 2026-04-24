@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 
 const heroVideo = "/video/hero1.mp4";
@@ -123,6 +124,11 @@ export function HeroTakeover() {
               <p className="reveal-text font-semibold italic text-[var(--foreground)]" style={{ animationDelay: "240ms" }}>
                 Welcome to Miss Ginko!
               </p>
+              <div className="reveal-text pt-1" style={{ animationDelay: "320ms" }}>
+                <Link href="/reserve" className="ui-btn-primary px-6 py-3 text-[11px] sm:text-xs">
+                  Reserve Your Table
+                </Link>
+              </div>
             </div>
           </div>
         </div>
