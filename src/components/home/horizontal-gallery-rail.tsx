@@ -13,6 +13,8 @@ type HorizontalGalleryRailProps = {
 };
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+const TEXT_RAIL_SPEED = 0.14;
+const TEXT_RAIL_START = 0.86;
 
 export function HorizontalGalleryRail({ photos }: HorizontalGalleryRailProps) {
   const sectionRef = useRef<HTMLElement>(null);
@@ -21,12 +23,16 @@ export function HorizontalGalleryRail({ photos }: HorizontalGalleryRailProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const textViewportRef = useRef<HTMLDivElement>(null);
   const textTrackRef = useRef<HTMLDivElement>(null);
+  const reverseImageViewportRef = useRef<HTMLDivElement>(null);
+  const reverseTrackRef = useRef<HTMLDivElement>(null);
 
   const [travel, setTravel] = useState(0);
   const [textTravel, setTextTravel] = useState(0);
+  const [reverseTravel, setReverseTravel] = useState(0);
   const [sectionHeight, setSectionHeight] = useState(0);
   const [translateX, setTranslateX] = useState(0);
   const [textTranslateX, setTextTranslateX] = useState(0);
+  const [reverseTranslateX, setReverseTranslateX] = useState(0);
 
   useEffect(() => {
     const updateMetrics = () => {
@@ -34,14 +40,19 @@ export function HorizontalGalleryRail({ photos }: HorizontalGalleryRailProps) {
       const track = trackRef.current;
       const textViewport = textViewportRef.current;
       const textTrack = textTrackRef.current;
-      if (!viewport || !track || !textViewport || !textTrack) return;
+      const reverseImageViewport = reverseImageViewportRef.current;
+      const reverseTrack = reverseTrackRef.current;
+      if (!viewport || !track || !textViewport || !textTrack || !reverseImageViewport || !reverseTrack) return;
 
       const nextTravel = Math.max(track.scrollWidth - viewport.clientWidth, 0);
       const nextTextTravel = Math.max(textTrack.scrollWidth - textViewport.clientWidth, 0);
-      const nextSectionHeight = Math.max(window.innerHeight + nextTravel, window.innerHeight * 1.25);
+      const nextReverseTravel = Math.max(reverseTrack.scrollWidth - reverseImageViewport.clientWidth, 0);
+      const maxImageTravel = Math.max(nextTravel, nextReverseTravel);
+      const nextSectionHeight = Math.max(window.innerHeight + maxImageTravel, window.innerHeight * 1.25);
 
       setTravel(nextTravel);
       setTextTravel(nextTextTravel);
+      setReverseTravel(nextReverseTravel);
       setSectionHeight(nextSectionHeight);
     };
 
@@ -66,7 +77,8 @@ export function HorizontalGalleryRail({ photos }: HorizontalGalleryRailProps) {
         const maxProgressDistance = Math.max(sectionHeight - window.innerHeight, 1);
         const progress = clamp(-rect.top / maxProgressDistance, 0, 1);
         setTranslateX(progress * travel);
-        setTextTranslateX(-textTravel + progress * textTravel);
+        setTextTranslateX(-textTravel * TEXT_RAIL_START + progress * (textTravel * TEXT_RAIL_SPEED));
+        setReverseTranslateX(-reverseTravel + progress * reverseTravel);
         raf = 0;
       });
     };
@@ -80,7 +92,7 @@ export function HorizontalGalleryRail({ photos }: HorizontalGalleryRailProps) {
       window.removeEventListener("resize", onScroll);
       if (raf) window.cancelAnimationFrame(raf);
     };
-  }, [sectionHeight, travel, textTravel]);
+  }, [sectionHeight, travel, textTravel, reverseTravel]);
 
   return (
     <section
@@ -134,6 +146,26 @@ export function HorizontalGalleryRail({ photos }: HorizontalGalleryRailProps) {
                     <span key={`gallery-text-${index}`} className="gallery-text-item">
                       ms ginko gallery
                     </span>
+                  ))}
+                </div>
+              </div>
+
+              <div ref={reverseImageViewportRef} className="gallery-image-viewport gallery-image-viewport-reverse">
+                <div
+                  ref={reverseTrackRef}
+                  className="gallery-scroll-track gallery-scroll-track-reverse"
+                  style={{ transform: `translate3d(${reverseTranslateX}px, 0, 0)` }}
+                >
+                  {[...photos, ...photos].reverse().map((photo, index) => (
+                    <article key={`${photo.src}-reverse-${index}`} className="gallery-scroll-card gallery-scroll-card-reverse">
+                      <Image
+                        src={photo.src}
+                        alt={photo.alt}
+                        fill
+                        className="gallery-scroll-image"
+                        sizes="(max-width: 639px) 52vw, (max-width: 1024px) 30vw, 22vw"
+                      />
+                    </article>
                   ))}
                 </div>
               </div>

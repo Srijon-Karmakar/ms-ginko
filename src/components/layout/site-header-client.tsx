@@ -28,6 +28,7 @@ export function SiteHeaderClient() {
   const pathname = usePathname();
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const isHome = pathname === "/";
+  const [scrolledIntoContent, setScrolledIntoContent] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -93,6 +94,43 @@ export function SiteHeaderClient() {
     return () => window.removeEventListener("mousedown", onPointerDown);
   }, [profileOpen]);
 
+  useEffect(() => {
+    if (!isHome) {
+      return;
+    }
+
+    let raf = 0;
+
+    const updateHeaderMode = () => {
+      const aboutSection = document.getElementById("about");
+      const heroSection = document.getElementById("hero");
+
+      const next =
+        (aboutSection
+          ? aboutSection.getBoundingClientRect().top <= window.innerHeight - 16
+          : heroSection
+            ? heroSection.getBoundingClientRect().bottom <= window.innerHeight
+            : window.scrollY > 6) || mobileOpen;
+
+      setScrolledIntoContent((prev) => (prev === next ? prev : next));
+      raf = 0;
+    };
+
+    const onScroll = () => {
+      if (!raf) raf = window.requestAnimationFrame(updateHeaderMode);
+    };
+
+    updateHeaderMode();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (raf) window.cancelAnimationFrame(raf);
+    };
+  }, [isHome, mobileOpen]);
+
   const profileLabel = useMemo(() => {
     if (!headerUser) return "Profile";
     if (headerUser.fullName) return headerUser.fullName;
@@ -116,6 +154,8 @@ export function SiteHeaderClient() {
     router.refresh();
   };
 
+  const headerToneClass = isHome && scrolledIntoContent ? "header-solid" : "header-gradient";
+
   return (
     <>
       <header
@@ -125,7 +165,7 @@ export function SiteHeaderClient() {
         }`}
       >
         <div
-          className="header-gradient flex w-full items-center justify-between gap-3 bg-gradient-to-b from-black/82 via-black/48 to-transparent px-3 py-3 sm:gap-4 sm:px-6 sm:py-3.5"
+          className={`header-shell ${headerToneClass} flex w-full items-center justify-between gap-3 px-3 py-3 sm:gap-4 sm:px-6 sm:py-3.5`}
         >
           <Link href="/" className="inline-flex items-center gap-2">
             <Image
@@ -234,7 +274,7 @@ export function SiteHeaderClient() {
         </div>
 
         {mobileOpen ? (
-          <div className="header-gradient w-full bg-gradient-to-b from-black/82 via-black/48 to-transparent px-4 pb-4 pt-1 lg:hidden">
+          <div className={`header-shell ${headerToneClass} w-full px-4 pb-4 pt-1 lg:hidden`}>
             <div className="flex flex-col gap-4">
               {navLinks.map((link) => (
                 <Link

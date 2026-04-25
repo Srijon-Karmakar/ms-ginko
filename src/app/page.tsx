@@ -78,7 +78,34 @@ export default function Home() {
         <HeroTakeover />
       </section>
 
-      <section id="about" className="overflow-hidden bg-[var(--background)]">
+      <section id="about" className="relative isolate overflow-hidden bg-[var(--background)]">
+        <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true" style={{ zIndex: -1 }}>
+          <svg
+            viewBox="0 0 1200 620"
+            preserveAspectRatio="xMidYMid slice"
+            className="absolute inset-0 h-full w-full"
+            style={{ fill: "none", strokeLinecap: "round", strokeLinejoin: "round" } as React.CSSProperties}
+          >
+            <path
+              pathLength="1"
+              className="path-draw scroll-reveal"
+              style={{ stroke: "color-mix(in srgb, var(--accent) 26%, #dcc0b0)", strokeWidth: "2" }}
+              d="M 1065,25 C 1095,110 1106,205 1078,295 C 1050,385 1022,435 1046,522"
+            />
+            <path
+              pathLength="1"
+              className="path-draw scroll-reveal"
+              style={{ stroke: "color-mix(in srgb, var(--accent) 20%, #dcc0b0)", strokeWidth: "1.5" }}
+              d="M 1078,295 C 1112,307 1142,330 1158,366 C 1170,395 1158,428 1132,440"
+            />
+            <path
+              pathLength="1"
+              className="path-draw scroll-reveal"
+              style={{ stroke: "color-mix(in srgb, var(--accent) 18%, #dcc0b0)", strokeWidth: "1.5" }}
+              d="M 118,310 C 96,365 88,425 108,478"
+            />
+          </svg>
+        </div>
         <div className="relative mx-auto max-w-5xl px-2 sm:px-4">
           <svg
             viewBox="0 0 1000 520"
@@ -244,7 +271,34 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="menus" className="overflow-hidden bg-[var(--background)]">
+      <section id="menus" className="relative isolate overflow-hidden bg-[var(--background)]">
+        <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true" style={{ zIndex: -1 }}>
+          <svg
+            viewBox="0 0 1200 560"
+            preserveAspectRatio="xMidYMid slice"
+            className="absolute inset-0 h-full w-full"
+            style={{ fill: "none", strokeLinecap: "round", strokeLinejoin: "round" } as React.CSSProperties}
+          >
+            <path
+              pathLength="1"
+              className="path-draw scroll-reveal"
+              style={{ stroke: "color-mix(in srgb, var(--accent) 24%, #dcc0b0)", strokeWidth: "2" }}
+              d="M 1005,18 C 1035,98 1046,188 1020,278 C 994,368 968,418 990,508"
+            />
+            <path
+              pathLength="1"
+              className="path-draw scroll-reveal"
+              style={{ stroke: "color-mix(in srgb, var(--accent) 18%, #dcc0b0)", strokeWidth: "1.5" }}
+              d="M 1020,278 C 1054,290 1082,312 1098,348 C 1112,378 1100,412 1074,424"
+            />
+            <path
+              pathLength="1"
+              className="path-draw scroll-reveal"
+              style={{ stroke: "color-mix(in srgb, var(--accent) 16%, #dcc0b0)", strokeWidth: "1.5" }}
+              d="M 1116,22 C 1148,62 1164,108 1154,154 C 1144,200 1116,226 1114,272"
+            />
+          </svg>
+        </div>
         <div className="pointer-events-none select-none overflow-hidden">
           <p className="section-watermark watermark-reveal">BRUNCH</p>
         </div>
@@ -295,7 +349,34 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="overflow-hidden bg-[var(--background)]">
+      <section className="relative isolate overflow-hidden bg-[var(--background)]">
+        <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true" style={{ zIndex: -1 }}>
+          <svg
+            viewBox="0 0 1200 560"
+            preserveAspectRatio="xMidYMid slice"
+            className="absolute inset-0 h-full w-full"
+            style={{ fill: "none", strokeLinecap: "round", strokeLinejoin: "round" } as React.CSSProperties}
+          >
+            <path
+              pathLength="1"
+              className="path-draw scroll-reveal"
+              style={{ stroke: "color-mix(in srgb, var(--accent) 24%, #dcc0b0)", strokeWidth: "2" }}
+              d="M 195,18 C 165,98 154,188 180,278 C 206,368 232,418 210,508"
+            />
+            <path
+              pathLength="1"
+              className="path-draw scroll-reveal"
+              style={{ stroke: "color-mix(in srgb, var(--accent) 18%, #dcc0b0)", strokeWidth: "1.5" }}
+              d="M 180,278 C 146,290 118,312 102,348 C 88,378 100,412 126,424"
+            />
+            <path
+              pathLength="1"
+              className="path-draw scroll-reveal"
+              style={{ stroke: "color-mix(in srgb, var(--accent) 16%, #dcc0b0)", strokeWidth: "1.5" }}
+              d="M 84,22 C 52,62 36,108 46,154 C 56,200 84,226 86,272"
+            />
+          </svg>
+        </div>
         <div className="pointer-events-none select-none overflow-hidden">
           <p className="section-watermark watermark-reveal">COFFEE</p>
         </div>
@@ -362,6 +443,24 @@ export default function Home() {
               style={{ stroke: "rgba(255,245,235,0.28)", strokeWidth: "2.5" }}
               d="M 950,20 C 970,80 980,150 960,210 C 940,270 900,300 900,360 C 900,420 940,450 950,500
                  M 960,210 C 995,218 1028,232 1048,262 C 1068,292 1055,332 1032,350 C 1010,368 980,365 968,395"
+            />
+            <path
+              pathLength="1"
+              className="path-draw scroll-reveal"
+              style={{ stroke: "rgba(255,245,235,0.22)", strokeWidth: "2" }}
+              d="M 248,22 C 218,96 208,176 228,250 C 248,324 276,364 264,434 C 252,494 228,494 240,494"
+            />
+            <path
+              pathLength="1"
+              className="path-draw scroll-reveal"
+              style={{ stroke: "rgba(255,245,235,0.15)", strokeWidth: "1.5" }}
+              d="M 228,250 C 194,262 164,284 148,318 C 134,348 146,380 170,392"
+            />
+            <path
+              pathLength="1"
+              className="path-draw scroll-reveal"
+              style={{ stroke: "rgba(255,245,235,0.13)", strokeWidth: "1.5" }}
+              d="M 78,28 C 48,82 36,144 54,198 C 72,252 98,280 92,336"
             />
           </svg>
         </div>
@@ -431,7 +530,40 @@ export default function Home() {
 
       <HorizontalGalleryRail photos={galleryPhotos} />
 
-      <section id="reservation" className="bg-[var(--background)] py-10 sm:py-14">
+      <section id="reservation" className="relative isolate bg-[var(--background)] py-10 sm:py-14">
+        <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true" style={{ zIndex: -1 }}>
+          <svg
+            viewBox="0 0 1200 380"
+            preserveAspectRatio="xMidYMid slice"
+            className="absolute inset-0 h-full w-full"
+            style={{ fill: "none", strokeLinecap: "round", strokeLinejoin: "round" } as React.CSSProperties}
+          >
+            <path
+              pathLength="1"
+              className="path-draw scroll-reveal"
+              style={{ stroke: "color-mix(in srgb, var(--accent) 22%, #dcc0b0)", strokeWidth: "2" }}
+              d="M 58,22 C 82,98 74,172 50,244 C 26,316 40,352 62,374"
+            />
+            <path
+              pathLength="1"
+              className="path-draw scroll-reveal"
+              style={{ stroke: "color-mix(in srgb, var(--accent) 15%, #dcc0b0)", strokeWidth: "1.5" }}
+              d="M 50,244 C 22,256 0,278 0,314"
+            />
+            <path
+              pathLength="1"
+              className="path-draw scroll-reveal"
+              style={{ stroke: "color-mix(in srgb, var(--accent) 22%, #dcc0b0)", strokeWidth: "2" }}
+              d="M 1142,22 C 1118,98 1126,172 1150,244 C 1174,316 1160,352 1138,374"
+            />
+            <path
+              pathLength="1"
+              className="path-draw scroll-reveal"
+              style={{ stroke: "color-mix(in srgb, var(--accent) 15%, #dcc0b0)", strokeWidth: "1.5" }}
+              d="M 1150,244 C 1178,256 1200,278 1200,314"
+            />
+          </svg>
+        </div>
         <div className="page-inner">
           <div className="ui-panel p-6 sm:p-10">
             <p className="ui-eyebrow scroll-reveal">Reservation</p>
@@ -460,7 +592,28 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="testimonial" className="bg-[var(--surface-alt)] py-10 sm:py-14">
+      <section id="testimonial" className="relative isolate bg-[var(--surface-alt)] py-10 sm:py-14">
+        <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true" style={{ zIndex: -1 }}>
+          <svg
+            viewBox="0 0 1200 340"
+            preserveAspectRatio="xMidYMid slice"
+            className="absolute inset-0 h-full w-full"
+            style={{ fill: "none", strokeLinecap: "round", strokeLinejoin: "round" } as React.CSSProperties}
+          >
+            <path
+              pathLength="1"
+              className="path-draw scroll-reveal"
+              style={{ stroke: "color-mix(in srgb, var(--accent) 20%, #dcc0b0)", strokeWidth: "2" }}
+              d="M 68,170 C 200,150 400,190 600,166 C 800,142 1000,182 1132,162"
+            />
+            <path
+              pathLength="1"
+              className="path-draw scroll-reveal"
+              style={{ stroke: "color-mix(in srgb, var(--accent) 14%, #dcc0b0)", strokeWidth: "1.5" }}
+              d="M 68,196 C 200,216 400,176 600,200 C 800,224 1000,184 1132,204"
+            />
+          </svg>
+        </div>
         <div className="page-inner">
           <p className="ui-eyebrow scroll-reveal">Testimonial</p>
           <div className="mt-5 grid gap-4 md:grid-cols-3">
