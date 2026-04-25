@@ -592,28 +592,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="testimonial" className="relative isolate bg-[var(--surface-alt)] py-10 sm:py-14">
-        <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true" style={{ zIndex: -1 }}>
-          <svg
-            viewBox="0 0 1200 340"
-            preserveAspectRatio="xMidYMid slice"
-            className="absolute inset-0 h-full w-full"
-            style={{ fill: "none", strokeLinecap: "round", strokeLinejoin: "round" } as React.CSSProperties}
-          >
-            <path
-              pathLength="1"
-              className="path-draw scroll-reveal"
-              style={{ stroke: "color-mix(in srgb, var(--accent) 20%, #dcc0b0)", strokeWidth: "2" }}
-              d="M 68,170 C 200,150 400,190 600,166 C 800,142 1000,182 1132,162"
-            />
-            <path
-              pathLength="1"
-              className="path-draw scroll-reveal"
-              style={{ stroke: "color-mix(in srgb, var(--accent) 14%, #dcc0b0)", strokeWidth: "1.5" }}
-              d="M 68,196 C 200,216 400,176 600,200 C 800,224 1000,184 1132,204"
-            />
-          </svg>
-        </div>
+      <section id="testimonial" className="bg-[var(--surface-alt)] py-10 sm:py-14">
         <div className="page-inner">
           <p className="ui-eyebrow scroll-reveal">Testimonial</p>
           <div className="mt-5 grid gap-4 md:grid-cols-3">
