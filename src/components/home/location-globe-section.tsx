@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { GlobeMethods } from "react-globe.gl";
 
 const Globe = dynamic(() => import("react-globe.gl"), {
@@ -26,7 +26,6 @@ const getTheme = () => {
   return document.documentElement.getAttribute("data-theme") ?? "light";
 };
 
-// Seeded LCG for deterministic mesh across renders
 function buildMeshData() {
   let seed = 54321;
   const rand = () => {
@@ -67,10 +66,9 @@ function buildMeshData() {
 
 const MESH = buildMeshData();
 
-// Globe surface CSS colors per theme
 const GLOBE_COLOR: Record<string, string> = {
-  light:  "#f5f3ef",
-  dark:   "#08080d",
+  light: "#f5f3ef",
+  dark: "#08080d",
   amoled: "#000000",
 };
 
@@ -92,7 +90,6 @@ export function LocationGlobeSection() {
       .catch(() => {});
   }, []);
 
-  // Track theme changes
   useEffect(() => {
     const update = () => setTheme(getTheme());
     update();
@@ -104,13 +101,13 @@ export function LocationGlobeSection() {
     return () => observer.disconnect();
   }, []);
 
-  // Rebuild solid-color globe texture whenever theme changes
   useEffect(() => {
     const hex = GLOBE_COLOR[theme] ?? GLOBE_COLOR.light;
     const canvas = document.createElement("canvas");
     canvas.width = 4;
     canvas.height = 4;
-    const ctx = canvas.getContext("2d")!;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
     ctx.fillStyle = hex;
     ctx.fillRect(0, 0, 4, 4);
     setGlobeTexture(canvas.toDataURL("image/png"));
@@ -119,9 +116,11 @@ export function LocationGlobeSection() {
   useEffect(() => {
     const stage = globeStageRef.current;
     if (!stage) return;
+
     const updateSize = () => {
       setGlobeSize(Math.floor(Math.min(stage.clientWidth, stage.clientHeight)));
     };
+
     updateSize();
     const observer = new ResizeObserver(updateSize);
     observer.observe(stage);
@@ -132,6 +131,7 @@ export function LocationGlobeSection() {
     const timer = window.setTimeout(() => {
       const globe = globeRef.current;
       if (!globe) return;
+
       globe.pointOfView({ ...RESTAURANT_LOCATION, altitude: 1.5 }, 1200);
       const controls = globe.controls();
       controls.autoRotate = true;
@@ -141,35 +141,67 @@ export function LocationGlobeSection() {
       controls.minDistance = 120;
       controls.maxDistance = 420;
     }, 160);
+
     return () => window.clearTimeout(timer);
   }, []);
 
-  const allPoints = useMemo(
+  const meshPoints = useMemo(
     () => [
-      ...MESH.nodes.map((n) => ({ ...n, type: "mesh" as const })),
-      { ...RESTAURANT_LOCATION, type: "pin" as const, label: "Ms Ginko" },
+      ...MESH.nodes.map((n) => ({ ...n, kind: "mesh" as const })),
+      { ...RESTAURANT_LOCATION, kind: "anchor" as const },
     ],
     [],
   );
-
-  const markerData = useMemo(() => [RESTAURANT_LOCATION], []);
-
-  const onGetDirections = () => {
-    window.open(DIRECTIONS_URL, "_blank", "noopener,noreferrer");
-  };
+  const markerData = useMemo(() => [{ ...RESTAURANT_LOCATION, label: "Ms Ginko" }], []);
 
   const isAmoled = theme === "amoled";
-  const isDark   = theme === "dark" || isAmoled;
+  const isDark = theme === "dark" || isAmoled;
 
-  // Theme-adaptive line colors
   const polyStroke = isAmoled ? "#ffaa55" : isDark ? "#d97b3a" : "#c46a28";
-  const polyCap    = isDark ? "rgba(220,110,40,0.09)" : "rgba(185,75,15,0.05)";
-  const polySide   = isAmoled ? "rgba(255,150,60,0.52)" : isDark ? "rgba(220,110,40,0.38)" : "rgba(185,75,15,0.24)";
-  const arcCol     = isAmoled ? "rgba(100,220,255,0.30)" : isDark ? "rgba(130,185,255,0.30)" : "rgba(65,125,210,0.38)";
-  const nodeCol    = isAmoled ? "rgba(130,225,255,0.70)" : isDark ? "rgba(150,195,255,0.65)" : "rgba(75,140,215,0.62)";
+  const polyCap = isDark ? "rgba(220,110,40,0.09)" : "rgba(185,75,15,0.05)";
+  const polySide = isAmoled ? "rgba(255,150,60,0.52)" : isDark ? "rgba(220,110,40,0.38)" : "rgba(185,75,15,0.24)";
+  const arcCol = isAmoled ? "rgba(100,220,255,0.30)" : isDark ? "rgba(130,185,255,0.30)" : "rgba(65,125,210,0.38)";
+  const nodeCol = isAmoled ? "rgba(130,225,255,0.70)" : isDark ? "rgba(150,195,255,0.65)" : "rgba(75,140,215,0.62)";
   const markerColor = isAmoled ? "#97f3ff" : "#e07835";
-  const ringStart   = isAmoled ? "rgba(151,243,255,0.98)" : "rgba(224,120,53,0.92)";
-  const ringEnd     = isAmoled ? "rgba(151,243,255,0)"    : "rgba(224,120,53,0)";
+
+  const onGetDirections = useCallback(() => {
+    window.open(DIRECTIONS_URL, "_blank", "noopener,noreferrer");
+  }, []);
+
+  const renderPinElement = useCallback(() => {
+    const anchor = document.createElement("div");
+    anchor.className = "globe-pin-anchor";
+
+    const marker = document.createElement("button");
+    marker.type = "button";
+    marker.className = "globe-pin-marker";
+    marker.style.setProperty("--pin-main", markerColor);
+    marker.style.setProperty("--pin-core", isAmoled ? "#e8fcff" : "#fff7f2");
+    marker.setAttribute("aria-label", "Open directions to Ms Ginko");
+    marker.innerHTML = `
+      <span class="globe-pin-glow" aria-hidden="true"></span>
+      <svg class="globe-pin-svg" viewBox="0 0 64 84" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <linearGradient id="pinFill" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="var(--pin-main)" stop-opacity="0.98" />
+            <stop offset="100%" stop-color="var(--pin-main)" stop-opacity="0.58" />
+          </linearGradient>
+        </defs>
+        <path d="M32 4C19.3 4 9 14.2 9 26.9c0 15 11.2 24.8 21.7 40.9a1.8 1.8 0 0 0 2.9 0C43.8 51.8 55 42 55 26.9 55 14.2 44.7 4 32 4Z" fill="url(#pinFill)" />
+        <path d="M32 4C19.3 4 9 14.2 9 26.9c0 15 11.2 24.8 21.7 40.9a1.8 1.8 0 0 0 2.9 0C43.8 51.8 55 42 55 26.9 55 14.2 44.7 4 32 4Z" fill="none" stroke="rgba(255,255,255,0.72)" stroke-width="1.6" />
+        <circle cx="32" cy="27" r="10.5" fill="var(--pin-core)" fill-opacity="0.95" />
+        <circle cx="32" cy="27" r="6.4" fill="var(--pin-main)" fill-opacity="0.9" />
+      </svg>
+      <span class="globe-pin-pulse" aria-hidden="true"></span>
+    `;
+    marker.onclick = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      onGetDirections();
+    };
+    anchor.appendChild(marker);
+    return anchor;
+  }, [isAmoled, markerColor, onGetDirections]);
 
   return (
     <section id="location" className="bg-[var(--background)] py-12 sm:py-16">
@@ -199,18 +231,15 @@ export function LocationGlobeSection() {
                   animateIn
                   waitForGlobeReady
                   backgroundColor="rgba(0,0,0,0)"
-                  // Solid-color sphere — color matches page theme
                   showGlobe
                   globeImageUrl={globeTexture}
                   showAtmosphere={false}
-                  // Continent outlines
                   polygonsData={countries.features}
                   polygonCapColor={() => polyCap}
                   polygonSideColor={() => polySide}
                   polygonStrokeColor={() => polyStroke}
                   polygonAltitude={0.013}
                   polygonLabel={() => ""}
-                  // Mesh arc network
                   arcsData={MESH.arcs}
                   arcStartLat="startLat"
                   arcStartLng="startLng"
@@ -219,39 +248,26 @@ export function LocationGlobeSection() {
                   arcColor={() => arcCol}
                   arcStroke={0.22}
                   arcAltitude={0.01}
-                  // Mesh nodes + restaurant pin
-                  pointsData={allPoints}
+                  pointsData={meshPoints}
                   pointLat="lat"
                   pointLng="lng"
-                  pointColor={(d: object) => {
-                    const p = d as { type: "mesh" | "pin" };
-                    return p.type === "pin" ? markerColor : nodeCol;
-                  }}
-                  pointRadius={(d: object) => {
-                    const p = d as { type: "mesh" | "pin" };
-                    return p.type === "pin" ? 0.82 : 0.16;
-                  }}
-                  pointAltitude={(d: object) => {
-                    const p = d as { type: "mesh" | "pin" };
-                    return p.type === "pin" ? 0.08 : 0.01;
-                  }}
-                  pointLabel={(d: object) => {
-                    const p = d as { type: "mesh" | "pin"; label?: string };
-                    if (p.type !== "pin") return "";
-                    return `<div style="padding:6px 8px;border-radius:10px;background:rgba(0,0,0,.78);color:#fff;font-size:12px;letter-spacing:.03em;">${p.label ?? "Ms Ginko"} — Click for directions</div>`;
-                  }}
+                  pointColor={(d: object) =>
+                    (d as { kind: "mesh" | "anchor" }).kind === "anchor" ? "rgba(0,0,0,0)" : nodeCol
+                  }
+                  pointRadius={(d: object) =>
+                    (d as { kind: "mesh" | "anchor" }).kind === "anchor" ? 0.52 : 0.16
+                  }
+                  pointAltitude={(d: object) =>
+                    (d as { kind: "mesh" | "anchor" }).kind === "anchor" ? 0.02 : 0.01
+                  }
                   onPointClick={(d: object) => {
-                    const p = d as { type: "mesh" | "pin" };
-                    if (p.type === "pin") onGetDirections();
+                    if ((d as { kind: "mesh" | "anchor" }).kind === "anchor") onGetDirections();
                   }}
-                  // Pulsing ring on restaurant
-                  ringsData={markerData}
-                  ringLat="lat"
-                  ringLng="lng"
-                  ringColor={() => [ringStart, ringEnd]}
-                  ringMaxRadius={isAmoled ? 10.5 : 8.5}
-                  ringPropagationSpeed={1.15}
-                  ringRepeatPeriod={760}
+                  htmlElementsData={markerData}
+                  htmlLat="lat"
+                  htmlLng="lng"
+                  htmlAltitude={0.012}
+                  htmlElement={renderPinElement}
                 />
               </div>
             ) : null}
@@ -276,6 +292,106 @@ export function LocationGlobeSection() {
           </div>
         </div>
       </div>
+      <style jsx global>{`
+        .globe-pin-anchor {
+          height: 1px;
+          overflow: visible;
+          position: relative;
+          pointer-events: auto !important;
+          width: 1px;
+        }
+
+        .globe-pin-marker {
+          left: 50%;
+          position: absolute;
+          top: 50%;
+          transform: translate(-50%, -100%);
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 58px;
+          height: 76px;
+          padding: 0;
+          border: 0;
+          background: transparent;
+          cursor: pointer;
+          pointer-events: auto !important;
+        }
+
+        .globe-pin-svg {
+          width: 50px;
+          height: 68px;
+          display: block;
+          filter:
+            drop-shadow(0 0 8px color-mix(in srgb, var(--pin-main) 60%, transparent))
+            drop-shadow(0 0 18px color-mix(in srgb, var(--pin-main) 40%, transparent));
+          animation: globe-pin-float 2.1s ease-in-out infinite;
+        }
+
+        .globe-pin-glow {
+          position: absolute;
+          top: 18px;
+          left: 50%;
+          width: 24px;
+          height: 24px;
+          border-radius: 999px;
+          transform: translate(-50%, -50%);
+          background: radial-gradient(
+            circle,
+            color-mix(in srgb, var(--pin-main) 88%, white) 0%,
+            color-mix(in srgb, var(--pin-main) 24%, transparent) 60%,
+            transparent 100%
+          );
+          filter: blur(1.3px);
+          pointer-events: none;
+        }
+
+        .globe-pin-pulse {
+          position: absolute;
+          left: 50%;
+          bottom: 5px;
+          width: 15px;
+          height: 15px;
+          border-radius: 999px;
+          transform: translate(-50%, 50%);
+          box-shadow: 0 0 0 0 color-mix(in srgb, var(--pin-main) 72%, transparent);
+          animation: globe-pin-pulse 1.45s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+          pointer-events: none;
+        }
+
+        .globe-pin-marker:hover .globe-pin-svg {
+          filter:
+            drop-shadow(0 0 10px color-mix(in srgb, var(--pin-main) 70%, transparent))
+            drop-shadow(0 0 26px color-mix(in srgb, var(--pin-main) 55%, transparent));
+        }
+
+        .globe-pin-marker:focus-visible {
+          outline: 2px solid color-mix(in srgb, var(--pin-main) 76%, white);
+          outline-offset: 2px;
+          border-radius: 999px;
+        }
+
+        @keyframes globe-pin-float {
+          0%,
+          100% {
+            transform: translateY(0);
+          }
+          50% {
+            transform: translateY(-4px);
+          }
+        }
+
+        @keyframes globe-pin-pulse {
+          0% {
+            box-shadow: 0 0 0 0 color-mix(in srgb, var(--pin-main) 70%, transparent);
+            opacity: 0.95;
+          }
+          100% {
+            box-shadow: 0 0 0 18px color-mix(in srgb, var(--pin-main) 0%, transparent);
+            opacity: 0;
+          }
+        }
+      `}</style>
     </section>
   );
 }

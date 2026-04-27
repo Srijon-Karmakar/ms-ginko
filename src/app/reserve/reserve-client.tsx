@@ -50,30 +50,50 @@ export function ReserveClient() {
   }, []);
 
   return (
-    <div className="page-wrapper py-4 sm:py-6">
-      <div className="rounded-xl border border-[#e2e2e2] bg-[#f5f5f5] p-3 sm:p-4">
-        {loading ? (
-          <div className="rounded-lg border border-[#dfdfdf] bg-white p-5 text-sm text-[#666666]">
-            Checking sign-in status...
+    <div className="page-wrapper py-6 sm:py-8">
+      {loading ? (
+        <div className="mx-auto max-w-2xl rounded-2xl border border-[color-mix(in_srgb,var(--border)_35%,transparent)] bg-[var(--surface)] p-6 text-sm text-[var(--muted)]">
+          Checking sign-in status...
+        </div>
+      ) : userEmail ? (
+        <ReservationForm userEmail={userEmail} />
+      ) : (
+        <section className="relative mx-auto max-w-3xl overflow-hidden rounded-[1.75rem] border border-[color-mix(in_srgb,var(--border)_38%,transparent)] bg-[var(--surface)] p-6 sm:p-8">
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            <div className="absolute -right-14 -top-16 h-40 w-40 rounded-full bg-[color-mix(in_srgb,var(--accent)_16%,transparent)] blur-2xl" />
+            <div className="absolute -bottom-16 -left-10 h-36 w-36 rounded-full bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] blur-2xl" />
           </div>
-        ) : userEmail ? (
-          <ReservationForm userEmail={userEmail} />
-        ) : (
-          <div className="mx-auto max-w-md rounded-lg border border-[#dfdfdf] bg-white p-5">
-            <h2 className="text-3xl text-[#2f2f2f]">Login Required</h2>
-            <p className="mt-2 text-sm text-[#666666]">
-              Please sign in to view live table availability and complete your booking.
-            </p>
-            <button
-              type="button"
-              onClick={() => setAuthOpen(true)}
-              className="mt-4 w-full rounded-xl bg-[#f4c716] px-4 py-3 text-sm font-bold uppercase tracking-[0.08em] text-[#2b2300]"
-            >
-              Login / Sign Up
-            </button>
+
+          <div className="relative grid gap-6 md:grid-cols-[auto_minmax(0,1fr)] md:items-center">
+            <div className="mx-auto inline-flex h-16 w-16 items-center justify-center rounded-2xl border border-[color-mix(in_srgb,var(--accent)_45%,transparent)] bg-[color-mix(in_srgb,var(--accent)_12%,transparent)] text-[var(--accent)] md:mx-0">
+              <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true">
+                <rect x="4.5" y="10.3" width="15" height="10" rx="2.6" />
+                <path d="M8 10.2V8a4 4 0 1 1 8 0v2.2" />
+                <circle cx="12" cy="15.2" r="1.2" fill="currentColor" stroke="none" />
+              </svg>
+            </div>
+
+            <div className="text-center md:text-left">
+              <p className="ui-eyebrow">Member Access</p>
+              <h2 className="mt-2 text-3xl tracking-tight text-[var(--foreground)] sm:text-4xl">Login Required</h2>
+              <p className="ui-copy mt-3 max-w-xl text-sm leading-6 sm:text-base">
+                Please sign in to view live table availability and complete your reservation in real time.
+              </p>
+
+              <div className="mt-5 flex flex-col items-center gap-2 md:items-start">
+                <button
+                  type="button"
+                  onClick={() => setAuthOpen(true)}
+                  className="ui-btn-primary w-full justify-center px-6 py-3 text-xs sm:w-auto"
+                >
+                  Login / Sign Up
+                </button>
+                <p className="ui-copy text-xs">You will return to this booking page after sign in.</p>
+              </div>
+            </div>
           </div>
-        )}
-      </div>
+        </section>
+      )}
       {authOpen ? <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} nextPath="/reserve" /> : null}
     </div>
   );
