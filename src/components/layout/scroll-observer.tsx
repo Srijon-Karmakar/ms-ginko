@@ -1,25 +1,34 @@
 "use client";
 
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 export function ScrollObserver() {
+  const pathname = usePathname();
+
   useEffect(() => {
+    const selector =
+      ".scroll-reveal, .headline-reveal, .watermark-reveal, .script-reveal, .path-draw";
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const targets = document.querySelectorAll<HTMLElement>(
-      ".scroll-reveal, .headline-reveal, .watermark-reveal, .script-reveal, .path-draw"
-    );
+
+    const markVisible = (elements: Iterable<HTMLElement>) => {
+      for (const element of elements) {
+        element.classList.add("visible");
+      }
+    };
 
     if (reduced) {
-      targets.forEach((el) => el.classList.add("visible"));
+      markVisible(document.querySelectorAll<HTMLElement>(selector));
       return;
     }
 
-    const observer = new IntersectionObserver(
+    const observed = new WeakSet<HTMLElement>();
+    const intersectionObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add("visible");
-            observer.unobserve(entry.target);
+            intersectionObserver.unobserve(entry.target);
           }
         });
       },
@@ -29,9 +38,38 @@ export function ScrollObserver() {
       }
     );
 
-    targets.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
-  }, []);
+    const register = (root: ParentNode) => {
+      root.querySelectorAll<HTMLElement>(selector).forEach((element) => {
+        if (element.classList.contains("visible") || observed.has(element)) return;
+        observed.add(element);
+        intersectionObserver.observe(element);
+      });
+    };
+
+    register(document);
+
+    const mutationObserver = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (!(node instanceof HTMLElement)) return;
+
+          if (node.matches(selector) && !node.classList.contains("visible") && !observed.has(node)) {
+            observed.add(node);
+            intersectionObserver.observe(node);
+          }
+
+          register(node);
+        });
+      });
+    });
+
+    mutationObserver.observe(document.body, { childList: true, subtree: true });
+
+    return () => {
+      mutationObserver.disconnect();
+      intersectionObserver.disconnect();
+    };
+  }, [pathname]);
 
   return null;
 }

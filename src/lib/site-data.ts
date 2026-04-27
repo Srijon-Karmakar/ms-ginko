@@ -1,3 +1,5 @@
+import { getImageUrl } from "@/lib/media";
+
 export const siteConfig = {
   name: "Ms Ginko",
   shortName: "Ginko",
@@ -125,7 +127,7 @@ export const menuItems: MenuItem[] = [
   },
 ];
 
-export const galleryItems = [
+const galleryItemSources = [
   {
     id: "gallery-1",
     title: "Dining Hall",
@@ -169,6 +171,11 @@ export const galleryItems = [
     alt: "Cozy booth seating in restaurant",
   },
 ];
+
+export const galleryItems = galleryItemSources.map((item) => ({
+  ...item,
+  image: getImageUrl(item.image),
+}));
 
 export const testimonials = [
   {

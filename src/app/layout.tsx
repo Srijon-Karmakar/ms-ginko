@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Barlow_Condensed, Caveat, Manrope } from "next/font/google";
+import { Poppins } from "next/font/google";
 import Script from "next/script";
 
 import { ScrollObserver } from "@/components/layout/scroll-observer";
@@ -9,23 +9,11 @@ import { SiteHeader } from "@/components/layout/site-header";
 import { siteConfig } from "@/lib/site-data";
 import "./globals.css";
 
-const barlowCondensed = Barlow_Condensed({
-  variable: "--font-display",
+const poppins = Poppins({
+  variable: "--font-body",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   style: ["normal", "italic"],
-});
-
-const manrope = Manrope({
-  variable: "--font-body",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-});
-
-const caveat = Caveat({
-  variable: "--font-script",
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -89,7 +77,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${barlowCondensed.variable} ${manrope.variable} ${caveat.variable} h-full antialiased`}
+      className={`${poppins.variable} h-full antialiased`}
     >
       <body className="min-h-full">
         <Script id="theme-init" strategy="beforeInteractive">

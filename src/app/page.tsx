@@ -2,9 +2,10 @@ import Link from "next/link";
 
 import { HeroTakeover } from "@/components/home/hero-takeover";
 import { HorizontalGalleryRail } from "@/components/home/horizontal-gallery-rail";
+import { getImageUrl } from "@/lib/media";
 import { siteConfig, testimonials } from "@/lib/site-data";
 
-const galleryPhotos = [
+const galleryPhotoSources = [
   {
     src: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1800&q=80",
     alt: "Warmly lit cafe interior",
@@ -54,6 +55,11 @@ const galleryPhotos = [
     alt: "Coffee bar with pour-over equipment",
   },
 ];
+
+const galleryPhotos = galleryPhotoSources.map((photo) => ({
+  ...photo,
+  src: getImageUrl(photo.src),
+}));
 
 const structuredData = {
   "@context": "https://schema.org",

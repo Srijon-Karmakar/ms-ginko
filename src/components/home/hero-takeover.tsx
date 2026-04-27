@@ -2,10 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
+import { getHeroVideoSourceUrls } from "@/lib/media";
 
-const heroVideoReversedWebm = "/video/hero1-reversed.webm";
-const heroVideoReversedMp4 = "/video/hero1-reversed.mp4";
-const heroVideoFallbackMp4 = "/video/hero1.mp4";
+const heroVideoSources = getHeroVideoSourceUrls();
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
@@ -87,6 +86,33 @@ export function HeroTakeover() {
           </svg>
         </div>
 
+        <div className="hero-food-doodles pointer-events-none absolute inset-0 z-[1]" aria-hidden="true">
+          <svg className="hero-food-doodle hero-food-doodle--cup" viewBox="0 0 220 220">
+            <path className="hero-food-doodle-path" d="M52 120h96v14a30 30 0 0 1-30 30H82a30 30 0 0 1-30-30Z" />
+            <path className="hero-food-doodle-path" d="M148 126h18a17 17 0 0 1 0 34h-14" />
+            <path className="hero-food-doodle-path" d="M46 166h112" />
+            <path className="hero-food-doodle-steam" d="M78 94c-7-9-2-19 4-26" />
+            <path className="hero-food-doodle-steam" d="M101 88c-6-10 0-19 6-27" />
+            <path className="hero-food-doodle-steam" d="M124 93c-6-10 0-18 6-26" />
+          </svg>
+
+          <svg className="hero-food-doodle hero-food-doodle--plate" viewBox="0 0 240 240">
+            <ellipse className="hero-food-doodle-path" cx="120" cy="134" rx="82" ry="32" />
+            <ellipse className="hero-food-doodle-path" cx="120" cy="134" rx="46" ry="16" />
+            <path className="hero-food-doodle-path" d="M48 126c18-18 40-28 72-28s54 10 72 28" />
+            <path className="hero-food-doodle-path" d="M120 98c8 10 7 23 0 33-7-10-8-23 0-33Z" />
+            <path className="hero-food-doodle-path" d="M102 112h36" />
+          </svg>
+
+          <svg className="hero-food-doodle hero-food-doodle--cloche" viewBox="0 0 260 220">
+            <path className="hero-food-doodle-path" d="M32 156h196" />
+            <path className="hero-food-doodle-path" d="M56 154c4-52 38-92 74-101" />
+            <path className="hero-food-doodle-path" d="M204 154c-4-52-38-92-74-101" />
+            <path className="hero-food-doodle-path" d="M130 53c-4-15 6-27 19-27s23 12 19 27" />
+            <path className="hero-food-doodle-path" d="M110 182h40" />
+          </svg>
+        </div>
+
         <div className="hero-takeover-content page-inner">
           <div
             style={
@@ -131,7 +157,7 @@ export function HeroTakeover() {
                 </defs>
 
                 <foreignObject x="-18" y="-18" width="1836" height="756" mask={`url(#${maskId})`}>
-                  <div xmlns="http://www.w3.org/1999/xhtml" className="hero-mask-video-wrap">
+                  <div className="hero-mask-video-wrap">
                     <video
                       className="hero-mask-video"
                       autoPlay
@@ -140,9 +166,9 @@ export function HeroTakeover() {
                       playsInline
                       preload="metadata"
                     >
-                      <source src={heroVideoReversedWebm} type="video/webm" />
-                      <source src={heroVideoReversedMp4} type="video/mp4" />
-                      <source src={heroVideoFallbackMp4} type="video/mp4" />
+                      {heroVideoSources.map((src) => (
+                        <source key={src} src={src} />
+                      ))}
                     </video>
                   </div>
                 </foreignObject>
