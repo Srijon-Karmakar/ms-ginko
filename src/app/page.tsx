@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { HeroTakeover } from "@/components/home/hero-takeover";
+import { LocationGlobeSection } from "@/components/home/location-globe-section";
 import { HorizontalGalleryRail } from "@/components/home/horizontal-gallery-rail";
 import { getImageUrl } from "@/lib/media";
 import { siteConfig, testimonials } from "@/lib/site-data";
@@ -535,43 +536,11 @@ export default function Home() {
       </section>
 
       <HorizontalGalleryRail photos={galleryPhotos} />
+      <LocationGlobeSection />
 
       <section id="reservation" className="relative isolate bg-[var(--background)] py-10 sm:py-14">
-        <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true" style={{ zIndex: -1 }}>
-          <svg
-            viewBox="0 0 1200 380"
-            preserveAspectRatio="xMidYMid slice"
-            className="absolute inset-0 h-full w-full"
-            style={{ fill: "none", strokeLinecap: "round", strokeLinejoin: "round" } as React.CSSProperties}
-          >
-            <path
-              pathLength="1"
-              className="path-draw scroll-reveal"
-              style={{ stroke: "color-mix(in srgb, var(--accent) 22%, #dcc0b0)", strokeWidth: "2" }}
-              d="M 58,22 C 82,98 74,172 50,244 C 26,316 40,352 62,374"
-            />
-            <path
-              pathLength="1"
-              className="path-draw scroll-reveal"
-              style={{ stroke: "color-mix(in srgb, var(--accent) 15%, #dcc0b0)", strokeWidth: "1.5" }}
-              d="M 50,244 C 22,256 0,278 0,314"
-            />
-            <path
-              pathLength="1"
-              className="path-draw scroll-reveal"
-              style={{ stroke: "color-mix(in srgb, var(--accent) 22%, #dcc0b0)", strokeWidth: "2" }}
-              d="M 1142,22 C 1118,98 1126,172 1150,244 C 1174,316 1160,352 1138,374"
-            />
-            <path
-              pathLength="1"
-              className="path-draw scroll-reveal"
-              style={{ stroke: "color-mix(in srgb, var(--accent) 15%, #dcc0b0)", strokeWidth: "1.5" }}
-              d="M 1150,244 C 1178,256 1200,278 1200,314"
-            />
-          </svg>
-        </div>
         <div className="page-inner">
-          <div className="ui-panel p-6 sm:p-10">
+          <div className="ui-panel !border-0 p-6 sm:p-10">
             <p className="ui-eyebrow scroll-reveal">Reservation</p>
             <div className="mt-4 grid gap-6 lg:grid-cols-2">
               <p
@@ -605,7 +574,7 @@ export default function Home() {
             {testimonials.map((item, idx) => (
               <article
                 key={item.id}
-                className="ui-card scroll-reveal p-5 sm:p-6"
+                className="ui-card scroll-reveal !border-0 p-5 sm:p-6"
                 data-delay={idx + 1}
               >
                 <p className="text-lg font-semibold italic leading-7 text-[var(--foreground)]">
