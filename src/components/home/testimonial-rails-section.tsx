@@ -223,7 +223,7 @@ export function TestimonialRailsSection({ initialTestimonials }: TestimonialRail
   };
 
   return (
-    <section id="testimonial" className="bg-[var(--surface-alt)] py-10 sm:py-14">
+    <section id="testimonial" className="bg-[var(--background)] py-10 sm:py-14">
       <div className="page-inner">
         <p className="ui-eyebrow scroll-reveal text-center">Testimonial</p>
         <h2
@@ -232,90 +232,6 @@ export function TestimonialRailsSection({ initialTestimonials }: TestimonialRail
         >
           Words of praise from guests about Ms Ginko.
         </h2>
-
-        <div className="mt-5 rounded-2xl border border-[color-mix(in_srgb,var(--border)_28%,transparent)] bg-[var(--surface-elevated)] p-4 sm:p-5">
-          <p className="ui-eyebrow">Give Review</p>
-          <div className="mt-2 flex flex-wrap items-center gap-2.5">
-            <div className="flex items-center gap-1" role="radiogroup" aria-label="Select rating">
-              {STAR_VALUES.map((value) => {
-                const active = value <= selectedRating;
-                return (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => setSelectedRating(value)}
-                    className="rounded-md px-1 py-0.5 text-base leading-none transition-colors"
-                    aria-label={`Rate ${value} star${value > 1 ? "s" : ""}`}
-                    aria-pressed={active}
-                    style={{
-                      color: active
-                        ? "color-mix(in srgb, var(--accent) 82%, #f0c430)"
-                        : "color-mix(in srgb, var(--muted) 58%, transparent)",
-                    }}
-                  >
-                    {"\u2605"}
-                  </button>
-                );
-              })}
-            </div>
-
-            <button type="button" onClick={onStartReview} className="ui-btn-primary px-4 py-2 text-[11px]">
-              Add Review
-            </button>
-
-            <p className="ui-copy text-xs sm:text-sm">
-              {loadingUser
-                ? "Checking login..."
-                : userEmail
-                  ? `Signed in as ${userEmail}`
-                  : "Login required to submit."}
-            </p>
-          </div>
-
-          {composeOpen ? (
-            <form className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]" onSubmit={onSubmitReview}>
-              <div className="grid gap-3">
-                <input
-                  type="text"
-                  value={reviewerName}
-                  onChange={(event) => setReviewerName(event.currentTarget.value)}
-                  maxLength={60}
-                  className="ui-field"
-                  placeholder="Your name"
-                />
-                <textarea
-                  value={reviewText}
-                  onChange={(event) => setReviewText(event.currentTarget.value)}
-                  maxLength={340}
-                  className="ui-field min-h-[108px] resize-y"
-                  placeholder="Share your experience..."
-                />
-              </div>
-              <div className="flex flex-row items-start gap-2 sm:flex-col">
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="ui-btn-primary w-full justify-center px-4 py-2 text-[11px] disabled:opacity-60 sm:w-auto"
-                >
-                  {submitting ? "Posting..." : "Post Review"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setComposeOpen(false)}
-                  className="ui-btn-secondary w-full justify-center px-4 py-2 text-[11px] sm:w-auto"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          ) : null}
-
-          {status ? (
-            <p className={`mt-3 text-sm ${status.ok ? "text-emerald-700" : "text-red-700"}`}>
-              {status.message}
-            </p>
-          ) : null}
-        </div>
       </div>
 
       <div className="testimonial-rails mt-6 sm:mt-8" aria-label="Guest testimonials">
@@ -383,6 +299,94 @@ export function TestimonialRailsSection({ initialTestimonials }: TestimonialRail
       </div>
 
       {loadingReviews ? <p className="ui-copy mt-4 text-center text-sm">Loading live reviews...</p> : null}
+
+      <div className="page-inner">
+        <div className="mx-auto mt-7 max-w-3xl text-center sm:mt-9">
+          <p className="ui-eyebrow">Visited Us ! Want to share a Review ?</p>
+          <div className="mt-2 flex items-center justify-center gap-1.5">
+            <div className="flex items-center gap-1" role="radiogroup" aria-label="Select rating">
+              {STAR_VALUES.map((value) => {
+                const active = value <= selectedRating;
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setSelectedRating(value)}
+                    className="rounded-md px-1 py-0.5 text-2xl leading-none transition-colors sm:text-[1.7rem]"
+                    aria-label={`Rate ${value} star${value > 1 ? "s" : ""}`}
+                    aria-pressed={active}
+                    style={{
+                      color: active
+                        ? "color-mix(in srgb, var(--accent) 82%, #f0c430)"
+                        : "color-mix(in srgb, var(--muted) 58%, transparent)",
+                    }}
+                  >
+                    {"\u2605"}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="mt-3 flex justify-center">
+            <button type="button" onClick={onStartReview} className="ui-btn-primary px-4 py-2 text-[11px]">
+              Add Review
+            </button>
+          </div>
+
+          <p className="ui-copy mt-2 text-xs sm:text-sm">
+            {loadingUser
+              ? "Checking login..."
+              : userEmail
+                ? `Signed in as ${userEmail}`
+                : "Login required to submit."}
+          </p>
+
+          {composeOpen ? (
+            <form className="mx-auto mt-4 grid max-w-2xl gap-3" onSubmit={onSubmitReview}>
+              <div className="grid gap-3">
+                <input
+                  type="text"
+                  value={reviewerName}
+                  onChange={(event) => setReviewerName(event.currentTarget.value)}
+                  maxLength={60}
+                  className="ui-field text-center"
+                  placeholder="Your name"
+                />
+                <textarea
+                  value={reviewText}
+                  onChange={(event) => setReviewText(event.currentTarget.value)}
+                  maxLength={340}
+                  className="ui-field min-h-[108px] resize-y text-center"
+                  placeholder="Share your experience..."
+                />
+              </div>
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="ui-btn-primary w-full justify-center px-4 py-2 text-[11px] disabled:opacity-60 sm:w-auto"
+                >
+                  {submitting ? "Posting..." : "Post Review"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setComposeOpen(false)}
+                  className="ui-btn-secondary w-full justify-center px-4 py-2 text-[11px] sm:w-auto"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          ) : null}
+
+          {status ? (
+            <p className={`mt-3 text-sm ${status.ok ? "text-emerald-700" : "text-red-700"}`}>
+              {status.message}
+            </p>
+          ) : null}
+        </div>
+      </div>
 
       {authOpen ? (
         <AuthModal

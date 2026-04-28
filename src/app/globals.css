@@ -49,6 +49,7 @@
   --header-nav-solid-text: rgba(0, 0, 0, 0.88);
   --header-nav-solid-text-active: #000000;
   --header-nav-solid-underline: #000000;
+  --testimonial-card-shadow: 0 10px 22px rgba(29, 19, 14, 0.08);
 }
 
 :root[data-theme="amoled"] {
@@ -82,6 +83,7 @@
   --header-nav-solid-text: rgba(246, 246, 246, 0.92);
   --header-nav-solid-text-active: #ffffff;
   --header-nav-solid-underline: #ffffff;
+  --testimonial-card-shadow: 0 12px 26px rgba(0, 0, 0, 0.38);
 }
 
 @theme inline {
@@ -1743,12 +1745,13 @@ a {
 .testimonial-rails {
   display: flex;
   flex-direction: column;
-  gap: 0.8rem;
+  gap: 1.5rem;
 }
 
 .testimonial-rail {
   overflow: hidden;
   position: relative;
+  padding: 0.45rem 0.85rem;
 }
 
 .testimonial-rail::before,
@@ -1756,8 +1759,8 @@ a {
   content: "";
   pointer-events: none;
   position: absolute;
-  top: 0;
-  bottom: 0;
+  top: 0.45rem;
+  bottom: 0.45rem;
   width: clamp(0.8rem, 4vw, 3.5rem);
   z-index: 3;
 }
@@ -1788,8 +1791,8 @@ a {
 .testimonial-rail-card {
   width: min(86vw, 360px);
   border-radius: 1rem;
-  border: 1px solid color-mix(in srgb, var(--border) 26%, transparent);
   background: color-mix(in srgb, var(--surface-elevated) 92%, transparent);
+  box-shadow: var(--testimonial-card-shadow);
   padding: 1rem 1rem 0.95rem;
 }
 
@@ -1921,11 +1924,21 @@ a {
   }
 
   .testimonial-rails {
-    gap: 1rem;
+    gap: 2rem;
   }
 
   .testimonial-rail-track {
     gap: 1.15rem;
+  }
+
+  .testimonial-rail {
+    padding: 0.6rem 1.2rem;
+  }
+
+  .testimonial-rail::before,
+  .testimonial-rail::after {
+    top: 0.6rem;
+    bottom: 0.6rem;
   }
 
   .testimonial-rail-card {
