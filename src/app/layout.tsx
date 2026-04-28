@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import Script from "next/script";
 
+import { IntroCurtain } from "@/components/layout/intro-curtain";
 import { ScrollObserver } from "@/components/layout/scroll-observer";
 import { ScrollTypographyBackground } from "@/components/layout/scroll-typography-background";
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -84,6 +85,7 @@ export default function RootLayout({
           {themeInitScript}
         </Script>
         <div className="site-shell relative min-h-screen overflow-x-clip">
+          <IntroCurtain />
           <ScrollObserver />
           <ScrollTypographyBackground />
           <SiteHeader />

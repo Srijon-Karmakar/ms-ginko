@@ -12,6 +12,12 @@
   initial-value: -45deg;
 }
 
+@property --intro-reveal-radius {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #1f1713;
@@ -114,6 +120,11 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+html.intro-lock,
+html.intro-lock body {
+  overflow: hidden;
+}
+
 h1,
 h2,
 h3,
@@ -148,6 +159,68 @@ a {
 .site-shell {
   background: var(--background);
   color: var(--foreground);
+}
+
+.intro-curtain {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  pointer-events: auto;
+  background: #ff0000;
+  --intro-reveal-radius: 0px;
+}
+
+.intro-curtain--reveal {
+  animation: intro-curtain-reveal var(--intro-reveal-ms, 1800ms) cubic-bezier(0.37, 0, 0.63, 1) forwards;
+  background: radial-gradient(
+    circle at 50% 50%,
+    transparent var(--intro-reveal-radius),
+    #ffffff var(--intro-reveal-radius),
+    #ffffff calc(var(--intro-reveal-radius) + 24px),
+    #000000 calc(var(--intro-reveal-radius) + 24px),
+    #000000 calc(var(--intro-reveal-radius) + 58px),
+    #ff0000 calc(var(--intro-reveal-radius) + 58px)
+  );
+}
+
+.intro-curtain-logo {
+  --intro-dx: 0px;
+  --intro-dy: 0px;
+  --intro-scale: 1;
+  --intro-move-ms: 860ms;
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  width: 200px;
+  height: 200px;
+  z-index: 121;
+  pointer-events: none;
+  transform: translate3d(-50%, -50%, 0);
+  transform-origin: center;
+  transition:
+    transform var(--intro-move-ms) cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 320ms ease;
+  will-change: transform;
+}
+
+.intro-curtain-logo--move {
+  transform: translate3d(calc(-50% + var(--intro-dx)), calc(-50% + var(--intro-dy)), 0)
+    scale(var(--intro-scale));
+}
+
+.intro-curtain-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@keyframes intro-curtain-reveal {
+  from {
+    --intro-reveal-radius: 0px;
+  }
+  to {
+    --intro-reveal-radius: 160vmax;
+  }
 }
 
 .ui-eyebrow {

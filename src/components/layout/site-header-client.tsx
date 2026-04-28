@@ -219,6 +219,7 @@ export function SiteHeaderClient() {
               width={72}
               height={72}
               priority
+              data-site-header-logo
               className="h-11 w-11 rounded-full object-cover sm:h-14 sm:w-14 md:h-16 md:w-16"
             />
           </Link>
