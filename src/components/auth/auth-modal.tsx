@@ -8,11 +8,12 @@ type AuthModalProps = {
   open: boolean;
   onClose: () => void;
   nextPath?: string;
+  onAuthSuccess?: () => void;
 };
 
 type AuthView = "sign-in" | "sign-up" | "forgot" | "reset";
 
-export function AuthModal({ open, onClose, nextPath = "/reserve" }: AuthModalProps) {
+export function AuthModal({ open, onClose, nextPath = "/reserve", onAuthSuccess }: AuthModalProps) {
   const [view, setView] = useState<AuthView>("sign-in");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -80,6 +81,12 @@ export function AuthModal({ open, onClose, nextPath = "/reserve" }: AuthModalPro
       return;
     }
 
+    if (onAuthSuccess) {
+      onAuthSuccess();
+      onClose();
+      return;
+    }
+
     window.location.assign(nextPath);
   };
 
@@ -125,6 +132,12 @@ export function AuthModal({ open, onClose, nextPath = "/reserve" }: AuthModalPro
     if (!data.session) {
       setMessage(true, "Account created. Verify from email, then sign in.");
       setView("sign-in");
+      return;
+    }
+
+    if (onAuthSuccess) {
+      onAuthSuccess();
+      onClose();
       return;
     }
 

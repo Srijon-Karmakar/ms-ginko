@@ -6,9 +6,9 @@ export const siteConfig = {
   description:
     "Ms Ginko is a modern dining experience in Annecy style: seasonal plates, intimate ambience, and curated reservations.",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
-  phone: "+1 (415) 555-0143",
+  phone: "+91 098363 11220",
   email: "hello@msginko.com",
-  address: "18 Willow Harbor Lane, Downtown District",
+  address: "3Floor, CITI MART, 169, Rash Behari Ave, Ekdalia, Ballygunge, Kolkata, West Bengal 700019",
   social: {
     instagram: "https://www.instagram.com",
     zomato: "https://www.zomato.com",

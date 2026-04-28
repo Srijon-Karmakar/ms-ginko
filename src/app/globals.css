@@ -166,7 +166,7 @@ a {
   inset: 0;
   z-index: 120;
   pointer-events: auto;
-  background: #ff0000;
+  background: #e31e25;
   --intro-reveal-radius: 0px;
 }
 
@@ -179,7 +179,7 @@ a {
     #ffffff calc(var(--intro-reveal-radius) + 24px),
     #000000 calc(var(--intro-reveal-radius) + 24px),
     #000000 calc(var(--intro-reveal-radius) + 58px),
-    #ff0000 calc(var(--intro-reveal-radius) + 58px)
+    #e31e25 calc(var(--intro-reveal-radius) + 58px)
   );
 }
 
@@ -1740,6 +1740,139 @@ a {
   margin-top: -0.15rem;
 }
 
+.testimonial-rails {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.testimonial-rail {
+  overflow: hidden;
+  position: relative;
+}
+
+.testimonial-rail::before,
+.testimonial-rail::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: clamp(0.8rem, 4vw, 3.5rem);
+  z-index: 3;
+}
+
+.testimonial-rail::before {
+  left: 0;
+  background: linear-gradient(to right, var(--surface-alt), transparent);
+}
+
+.testimonial-rail::after {
+  right: 0;
+  background: linear-gradient(to left, var(--surface-alt), transparent);
+}
+
+.testimonial-rail-track {
+  display: flex;
+  gap: 0.9rem;
+  width: max-content;
+  animation: testimonial-rail-left 40s linear infinite;
+  will-change: transform;
+}
+
+.testimonial-rail--rtl .testimonial-rail-track {
+  animation-name: testimonial-rail-right;
+  animation-duration: 36s;
+}
+
+.testimonial-rail-card {
+  width: min(86vw, 360px);
+  border-radius: 1rem;
+  border: 1px solid color-mix(in srgb, var(--border) 26%, transparent);
+  background: color-mix(in srgb, var(--surface-elevated) 92%, transparent);
+  padding: 1rem 1rem 0.95rem;
+}
+
+.testimonial-rail-quote {
+  margin: 0;
+  font-size: 1.9rem;
+  line-height: 1;
+  color: color-mix(in srgb, var(--accent) 88%, #4564ff);
+}
+
+.testimonial-rail-copy {
+  margin: 0.4rem 0 0;
+  color: var(--foreground);
+  font-size: 0.98rem;
+  line-height: 1.52;
+}
+
+.testimonial-rail-meta {
+  margin-top: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.58rem;
+}
+
+.testimonial-rail-avatar-img {
+  display: block;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 1px solid color-mix(in srgb, var(--border) 35%, transparent);
+}
+
+.testimonial-rail-rating {
+  margin-top: 0.68rem;
+  display: flex;
+  align-items: center;
+  gap: 0.42rem;
+}
+
+.testimonial-rail-stars {
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  color: color-mix(in srgb, var(--accent) 88%, #f0c430);
+}
+
+.testimonial-rail-score {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--muted) 82%, transparent);
+}
+
+.testimonial-rail-name {
+  margin: 0;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.testimonial-rail-role {
+  margin: 0.04rem 0 0;
+  font-size: 0.67rem;
+  color: color-mix(in srgb, var(--muted) 84%, transparent);
+}
+
+@keyframes testimonial-rail-left {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes testimonial-rail-right {
+  from {
+    transform: translate3d(-50%, 0, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
 @media (min-width: 640px) {
   .hero-takeover {
     height: 220vh;
@@ -1786,6 +1919,19 @@ a {
   .gallery-text-track {
     gap: 4.2rem;
   }
+
+  .testimonial-rails {
+    gap: 1rem;
+  }
+
+  .testimonial-rail-track {
+    gap: 1.15rem;
+  }
+
+  .testimonial-rail-card {
+    width: min(46vw, 390px);
+    padding: 1.1rem 1.1rem 1rem;
+  }
 }
 
 @media (min-width: 1024px) {
@@ -1827,6 +1973,10 @@ a {
     font-size: clamp(2.4rem, 3.75vw, 4.2rem);
     letter-spacing: 0.08em;
     padding-right: clamp(1rem, 1.7vw, 1.8rem);
+  }
+
+  .testimonial-rail-card {
+    width: min(31vw, 420px);
   }
 }
 

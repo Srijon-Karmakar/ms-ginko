@@ -3,6 +3,7 @@ import Link from "next/link";
 import { HeroTakeover } from "@/components/home/hero-takeover";
 import { LocationGlobeSection } from "@/components/home/location-globe-section";
 import { HorizontalGalleryRail } from "@/components/home/horizontal-gallery-rail";
+import { TestimonialRailsSection } from "@/components/home/testimonial-rails-section";
 import { getImageUrl } from "@/lib/media";
 import { siteConfig, testimonials } from "@/lib/site-data";
 
@@ -567,25 +568,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="testimonial" className="bg-[var(--surface-alt)] py-10 sm:py-14">
-        <div className="page-inner">
-          <p className="ui-eyebrow scroll-reveal">Testimonial</p>
-          <div className="mt-5 grid gap-4 md:grid-cols-3">
-            {testimonials.map((item, idx) => (
-              <article
-                key={item.id}
-                className="ui-card scroll-reveal !border-0 p-5 sm:p-6"
-                data-delay={idx + 1}
-              >
-                <p className="text-lg font-semibold italic leading-7 text-[var(--foreground)]">
-                  &quot;{item.quote}&quot;
-                </p>
-                <p className="ui-copy mt-4 text-sm uppercase tracking-[0.08em]">{item.name}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
+      <TestimonialRailsSection initialTestimonials={testimonials} />
 
       <script
         type="application/ld+json"
