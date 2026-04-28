@@ -225,7 +225,7 @@ export function SiteHeaderClient() {
             embedded
             showLogo={false}
             isFixed={false}
-            className={`site-header-staggered ${headerToneClass}`}
+            className="site-header-staggered"
             items={menuItems}
             colors={["var(--surface-alt)", "var(--surface)"]}
             displaySocials={false}
