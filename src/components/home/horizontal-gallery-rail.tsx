@@ -26,13 +26,8 @@ export function HorizontalGalleryRail({ photos }: HorizontalGalleryRailProps) {
   const reverseImageViewportRef = useRef<HTMLDivElement>(null);
   const reverseTrackRef = useRef<HTMLDivElement>(null);
 
-  const [travel, setTravel] = useState(0);
-  const [textTravel, setTextTravel] = useState(0);
-  const [reverseTravel, setReverseTravel] = useState(0);
   const [sectionHeight, setSectionHeight] = useState(0);
-  const [translateX, setTranslateX] = useState(0);
-  const [textTranslateX, setTextTranslateX] = useState(0);
-  const [reverseTranslateX, setReverseTranslateX] = useState(0);
+  const metricsRef = useRef({ travel: 0, textTravel: 0, reverseTravel: 0, sectionHeight: 0 });
 
   useEffect(() => {
     const updateMetrics = () => {
@@ -50,10 +45,35 @@ export function HorizontalGalleryRail({ photos }: HorizontalGalleryRailProps) {
       const maxImageTravel = Math.max(nextTravel, nextReverseTravel);
       const nextSectionHeight = Math.max(window.innerHeight + maxImageTravel, window.innerHeight * 1.25);
 
-      setTravel(nextTravel);
-      setTextTravel(nextTextTravel);
-      setReverseTravel(nextReverseTravel);
-      setSectionHeight(nextSectionHeight);
+      metricsRef.current = {
+        travel: nextTravel,
+        textTravel: nextTextTravel,
+        reverseTravel: nextReverseTravel,
+        sectionHeight: nextSectionHeight,
+      };
+      setSectionHeight((previous) =>
+        Math.abs(previous - nextSectionHeight) > 1 ? nextSectionHeight : previous
+      );
+
+      const section = sectionRef.current;
+      if (!section) return;
+      const rect = section.getBoundingClientRect();
+      const maxProgressDistance = Math.max(nextSectionHeight - window.innerHeight, 1);
+      const progress = clamp(-rect.top / maxProgressDistance, 0, 1);
+
+      if (trackRef.current) {
+        trackRef.current.style.transform = `translate3d(-${progress * nextTravel}px, 0, 0)`;
+      }
+      if (textTrackRef.current) {
+        textTrackRef.current.style.transform = `translate3d(${
+          -nextTextTravel * TEXT_RAIL_START + progress * (nextTextTravel * TEXT_RAIL_SPEED)
+        }px, 0, 0)`;
+      }
+      if (reverseTrackRef.current) {
+        reverseTrackRef.current.style.transform = `translate3d(${
+          -nextReverseTravel + progress * nextReverseTravel
+        }px, 0, 0)`;
+      }
     };
 
     updateMetrics();
@@ -74,11 +94,23 @@ export function HorizontalGalleryRail({ photos }: HorizontalGalleryRailProps) {
 
       raf = window.requestAnimationFrame(() => {
         const rect = section.getBoundingClientRect();
-        const maxProgressDistance = Math.max(sectionHeight - window.innerHeight, 1);
+        const { travel, textTravel, reverseTravel, sectionHeight: currentSectionHeight } = metricsRef.current;
+        const maxProgressDistance = Math.max(currentSectionHeight - window.innerHeight, 1);
         const progress = clamp(-rect.top / maxProgressDistance, 0, 1);
-        setTranslateX(progress * travel);
-        setTextTranslateX(-textTravel * TEXT_RAIL_START + progress * (textTravel * TEXT_RAIL_SPEED));
-        setReverseTranslateX(-reverseTravel + progress * reverseTravel);
+
+        if (trackRef.current) {
+          trackRef.current.style.transform = `translate3d(-${progress * travel}px, 0, 0)`;
+        }
+        if (textTrackRef.current) {
+          textTrackRef.current.style.transform = `translate3d(${
+            -textTravel * TEXT_RAIL_START + progress * (textTravel * TEXT_RAIL_SPEED)
+          }px, 0, 0)`;
+        }
+        if (reverseTrackRef.current) {
+          reverseTrackRef.current.style.transform = `translate3d(${
+            -reverseTravel + progress * reverseTravel
+          }px, 0, 0)`;
+        }
         raf = 0;
       });
     };
@@ -92,7 +124,7 @@ export function HorizontalGalleryRail({ photos }: HorizontalGalleryRailProps) {
       window.removeEventListener("resize", onScroll);
       if (raf) window.cancelAnimationFrame(raf);
     };
-  }, [sectionHeight, travel, textTravel, reverseTravel]);
+  }, []);
 
   return (
     <section
@@ -119,7 +151,6 @@ export function HorizontalGalleryRail({ photos }: HorizontalGalleryRailProps) {
                 <div
                   ref={trackRef}
                   className="gallery-scroll-track"
-                  style={{ transform: `translate3d(-${translateX}px, 0, 0)` }}
                 >
                   {photos.map((photo, index) => (
                     <article key={`${photo.src}-${index}`} className="gallery-scroll-card">
@@ -140,7 +171,6 @@ export function HorizontalGalleryRail({ photos }: HorizontalGalleryRailProps) {
                 <div
                   ref={textTrackRef}
                   className="gallery-text-track"
-                  style={{ transform: `translate3d(${textTranslateX}px, 0, 0)` }}
                 >
                   {Array.from({ length: 18 }).map((_, index) => (
                     <span key={`gallery-text-${index}`} className="gallery-text-item">
@@ -154,7 +184,6 @@ export function HorizontalGalleryRail({ photos }: HorizontalGalleryRailProps) {
                 <div
                   ref={reverseTrackRef}
                   className="gallery-scroll-track gallery-scroll-track-reverse"
-                  style={{ transform: `translate3d(${reverseTranslateX}px, 0, 0)` }}
                 >
                   {[...photos, ...photos].reverse().map((photo, index) => (
                     <article key={`${photo.src}-reverse-${index}`} className="gallery-scroll-card gallery-scroll-card-reverse">

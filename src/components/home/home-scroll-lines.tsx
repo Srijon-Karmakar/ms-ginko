@@ -18,7 +18,7 @@ export function HomeScrollLines() {
       const root = document.documentElement;
       const maxScroll = root.scrollHeight - window.innerHeight;
       const next = maxScroll <= 0 ? 0 : clamp(window.scrollY / maxScroll, 0, 1);
-      setProgress(next);
+      setProgress((prev) => (Math.abs(prev - next) > 0.008 ? next : prev));
       raf = 0;
     };
 

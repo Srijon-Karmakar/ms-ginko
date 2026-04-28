@@ -34,7 +34,7 @@ function buildMeshData() {
   };
 
   const nodes: Array<{ lat: number; lng: number }> = [];
-  for (let i = 0; i < 220; i++) {
+  for (let i = 0; i < 160; i++) {
     nodes.push({ lat: rand() * 160 - 80, lng: rand() * 360 - 180 });
   }
 
@@ -66,6 +66,15 @@ function buildMeshData() {
 
 const MESH = buildMeshData();
 
+type CountriesGeoJson = { features: object[] };
+type GlobeRuntime = GlobeMethods & {
+  pauseAnimation?: () => void;
+  resumeAnimation?: () => void;
+};
+
+let cachedCountries: CountriesGeoJson | null = null;
+let countriesFetchPromise: Promise<CountriesGeoJson> | null = null;
+
 const GLOBE_COLOR: Record<string, string> = {
   light: "#f5f3ef",
   dark: "#08080d",
@@ -78,8 +87,9 @@ export function LocationGlobeSection() {
 
   const [theme, setTheme] = useState<string>("light");
   const [isTouchDevice, setIsTouchDevice] = useState(false);
+  const [isGlobeInView, setIsGlobeInView] = useState(true);
   const [globeSize, setGlobeSize] = useState(0);
-  const [countries, setCountries] = useState<{ features: object[] }>({ features: [] });
+  const [countries, setCountries] = useState<CountriesGeoJson>({ features: [] });
   const [globeTexture, setGlobeTexture] = useState<string | undefined>(undefined);
 
   useEffect(() => {
@@ -91,11 +101,22 @@ export function LocationGlobeSection() {
   }, []);
 
   useEffect(() => {
-    fetch(
-      "https://raw.githubusercontent.com/vasturiano/react-globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson",
-    )
-      .then((r) => r.json())
-      .then((data: { features: object[] }) => setCountries(data))
+    if (cachedCountries) {
+      setCountries(cachedCountries);
+      return;
+    }
+
+    if (!countriesFetchPromise) {
+      countriesFetchPromise = fetch(
+        "https://raw.githubusercontent.com/vasturiano/react-globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson",
+      ).then((r) => r.json() as Promise<CountriesGeoJson>);
+    }
+
+    countriesFetchPromise
+      .then((data) => {
+        cachedCountries = data;
+        setCountries(data);
+      })
       .catch(() => {});
   }, []);
 
@@ -127,11 +148,27 @@ export function LocationGlobeSection() {
     if (!stage) return;
 
     const updateSize = () => {
-      setGlobeSize(Math.floor(Math.min(stage.clientWidth, stage.clientHeight)));
+      const nextSize = Math.floor(Math.min(stage.clientWidth, stage.clientHeight));
+      setGlobeSize((previous) => (Math.abs(previous - nextSize) > 1 ? nextSize : previous));
     };
 
     updateSize();
     const observer = new ResizeObserver(updateSize);
+    observer.observe(stage);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const stage = globeStageRef.current;
+    if (!stage) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsGlobeInView(entry.isIntersecting);
+      },
+      { root: null, threshold: 0.08 }
+    );
+
     observer.observe(stage);
     return () => observer.disconnect();
   }, []);
@@ -212,6 +249,21 @@ export function LocationGlobeSection() {
       removeTouchGuards?.();
     };
   }, [isTouchDevice]);
+
+  useEffect(() => {
+    const globe = globeRef.current as GlobeRuntime | undefined;
+    if (!globe) return;
+
+    const controls = globe.controls();
+    const allowAutoRotate = isGlobeInView;
+    controls.autoRotate = allowAutoRotate;
+
+    if (allowAutoRotate) {
+      globe.resumeAnimation?.();
+    } else {
+      globe.pauseAnimation?.();
+    }
+  }, [isGlobeInView]);
 
   const meshPoints = useMemo(
     () => [

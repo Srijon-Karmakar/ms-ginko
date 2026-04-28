@@ -28,7 +28,7 @@ export function HeroTakeover() {
       const rect = section.getBoundingClientRect();
       const travel = Math.max(section.offsetHeight - window.innerHeight, 1);
       const next = clamp(-rect.top / travel, 0, 1);
-      setProgress((prev) => (Math.abs(prev - next) > 0.003 ? next : prev));
+      setProgress((prev) => (Math.abs(prev - next) > 0.008 ? next : prev));
       raf = 0;
     };
 

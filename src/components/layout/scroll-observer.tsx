@@ -48,6 +48,8 @@ export function ScrollObserver() {
 
     register(document);
 
+    let mutationRaf = 0;
+    const pendingRoots = new Set<ParentNode>();
     const mutationObserver = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         mutation.addedNodes.forEach((node) => {
@@ -58,15 +60,25 @@ export function ScrollObserver() {
             intersectionObserver.observe(node);
           }
 
-          register(node);
+          pendingRoots.add(node);
         });
       });
+
+      if (!mutationRaf) {
+        mutationRaf = window.requestAnimationFrame(() => {
+          pendingRoots.forEach((root) => register(root));
+          pendingRoots.clear();
+          mutationRaf = 0;
+        });
+      }
     });
 
-    mutationObserver.observe(document.body, { childList: true, subtree: true });
+    const mainRoot = document.querySelector("main");
+    mutationObserver.observe(mainRoot ?? document.body, { childList: true, subtree: true });
 
     return () => {
       mutationObserver.disconnect();
+      if (mutationRaf) window.cancelAnimationFrame(mutationRaf);
       intersectionObserver.disconnect();
     };
   }, [pathname]);
