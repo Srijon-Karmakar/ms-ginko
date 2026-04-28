@@ -593,7 +593,12 @@ export function StaggeredMenu({
 .sm-scope .sm-icon { position: relative; width: 14px; height: 14px; flex: 0 0 14px; display: inline-flex; align-items: center; justify-content: center; will-change: transform; }
 .sm-scope .sm-panel-itemWrap { position: relative; overflow: hidden; line-height: 1; }
 .sm-scope .sm-icon-line { position: absolute; left: 50%; top: 50%; width: 100%; height: 2px; background: currentColor; border-radius: 2px; transform: translate(-50%, -50%); will-change: transform; }
-.sm-scope .staggered-menu-panel { position: absolute; top: 0; right: 0; width: clamp(280px, 42vw, 480px); height: 100%; background: color-mix(in srgb, var(--background) 95%, transparent); color: var(--header-nav-solid-text-active); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); display: flex; flex-direction: column; padding: 6em 2em 2em 2em; overflow-y: auto; z-index: 68; border-left: 1px solid color-mix(in srgb, var(--border) 45%, transparent); }
+.sm-scope .staggered-menu-panel { position: absolute; top: 0; right: 0; width: clamp(280px, 42vw, 480px); height: 100%; background: color-mix(in srgb, var(--background) 95%, transparent); color: var(--header-nav-solid-text-active); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); display: flex; flex-direction: column; padding: 6em 2em 2em 2em; overflow-y: auto; z-index: 68; border-left: 1px solid color-mix(in srgb, var(--border) 45%, transparent); -ms-overflow-style: none; scrollbar-width: none; scrollbar-color: transparent transparent; }
+.sm-scope .staggered-menu-panel::-webkit-scrollbar { width: 2px; }
+.sm-scope .staggered-menu-panel::-webkit-scrollbar-track { background: transparent; }
+.sm-scope .staggered-menu-panel::-webkit-scrollbar-thumb { background: transparent; border-radius: 999px; }
+.sm-scope .staggered-menu-panel:hover::-webkit-scrollbar-thumb,
+.sm-scope .staggered-menu-panel:focus-within::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--foreground) 18%, transparent); }
 .sm-scope [data-position='left'] .staggered-menu-panel { right: auto; left: 0; }
 .sm-scope .sm-prelayers { position: absolute; top: 0; right: 0; bottom: 0; width: clamp(280px, 42vw, 480px); pointer-events: none; z-index: 65; }
 .sm-scope [data-position='left'] .sm-prelayers { right: auto; left: 0; }

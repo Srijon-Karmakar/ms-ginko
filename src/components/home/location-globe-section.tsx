@@ -77,9 +77,18 @@ export function LocationGlobeSection() {
   const globeStageRef = useRef<HTMLDivElement | null>(null);
 
   const [theme, setTheme] = useState<string>("light");
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
   const [globeSize, setGlobeSize] = useState(0);
   const [countries, setCountries] = useState<{ features: object[] }>({ features: [] });
   const [globeTexture, setGlobeTexture] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 1024px), (pointer: coarse)");
+    const update = () => setIsTouchDevice(media.matches);
+    update();
+    media.addEventListener?.("change", update);
+    return () => media.removeEventListener?.("change", update);
+  }, []);
 
   useEffect(() => {
     fetch(
@@ -128,6 +137,7 @@ export function LocationGlobeSection() {
   }, []);
 
   useEffect(() => {
+    let removeTouchGuards: (() => void) | undefined;
     const timer = window.setTimeout(() => {
       const globe = globeRef.current;
       if (!globe) return;
@@ -140,10 +150,68 @@ export function LocationGlobeSection() {
       controls.dampingFactor = 0.085;
       controls.minDistance = 120;
       controls.maxDistance = 420;
+      controls.enablePan = false;
+
+      const controlDom = controls.domElement as HTMLElement | undefined;
+      if (controlDom) {
+        controlDom.style.touchAction = isTouchDevice ? "pan-y" : "none";
+      }
+
+      if (!isTouchDevice || !controlDom) {
+        controls.enabled = true;
+        controls.enableRotate = true;
+        controls.enableZoom = true;
+        return;
+      }
+
+      // Mobile behavior:
+      // 1 finger -> page scroll (globe controls off)
+      // 2+ fingers -> globe interaction (rotate/zoom on)
+      controls.enabled = false;
+      controls.enableRotate = false;
+      controls.enableZoom = false;
+
+      const setInteractionMode = (event: TouchEvent) => {
+        const twoFingerGesture = event.touches.length >= 2;
+
+        controls.enabled = twoFingerGesture;
+        controls.enableRotate = twoFingerGesture;
+        controls.enableZoom = twoFingerGesture;
+        controls.autoRotate = !twoFingerGesture;
+
+        if (twoFingerGesture) {
+          event.preventDefault();
+        }
+      };
+
+      const onTouchStart = (event: TouchEvent) => setInteractionMode(event);
+      const onTouchMove = (event: TouchEvent) => setInteractionMode(event);
+      const onTouchEnd = () => {
+        controls.enabled = false;
+        controls.enableRotate = false;
+        controls.enableZoom = false;
+        controls.autoRotate = true;
+      };
+
+      const options: AddEventListenerOptions = { capture: true, passive: false };
+      controlDom.addEventListener("touchstart", onTouchStart, options);
+      controlDom.addEventListener("touchmove", onTouchMove, options);
+      controlDom.addEventListener("touchend", onTouchEnd, options);
+      controlDom.addEventListener("touchcancel", onTouchEnd, options);
+
+      removeTouchGuards = () => {
+        controlDom.removeEventListener("touchstart", onTouchStart, options);
+        controlDom.removeEventListener("touchmove", onTouchMove, options);
+        controlDom.removeEventListener("touchend", onTouchEnd, options);
+        controlDom.removeEventListener("touchcancel", onTouchEnd, options);
+      };
     }, 160);
 
-    return () => window.clearTimeout(timer);
-  }, []);
+    return () => {
+      window.clearTimeout(timer);
+      removeTouchGuards?.();
+    };
+  }, [isTouchDevice]);
 
   const meshPoints = useMemo(
     () => [
@@ -212,7 +280,8 @@ export function LocationGlobeSection() {
             MISS GINKO
           </h2>
           <p className="ui-copy mt-4 max-w-2xl text-sm leading-6 sm:text-base">
-            Drag to rotate, pinch or scroll to zoom. Tap the marker to open directions to Ms Ginko in Kolkata.
+            Desktop: drag to rotate, scroll to zoom. Mobile: use one finger to scroll the page, two fingers to
+            rotate/zoom the globe. Tap the marker to open directions to Ms Ginko in Kolkata.
           </p>
 
           <div

@@ -35,6 +35,8 @@
   --gallery-rail-card-border: rgba(120, 84, 64, 0.24);
   --gallery-rail-card-shadow: 0 14px 32px rgba(34, 22, 15, 0.12);
   --gallery-rail-image-filter: saturate(1.02) contrast(1.01);
+  --gallery-rail-edge-fade-start: #ffffff;
+  --gallery-rail-edge-fade-mid: rgba(255, 255, 255, 0.86);
   --header-nav-hero-text: rgba(246, 246, 246, 0.9);
   --header-nav-hero-text-active: #ffffff;
   --header-nav-hero-underline: #ffffff;
@@ -66,6 +68,8 @@
   --gallery-rail-card-border: rgba(244, 230, 223, 0.22);
   --gallery-rail-card-shadow: 0 18px 42px rgba(0, 0, 0, 0.52);
   --gallery-rail-image-filter: saturate(1.08) brightness(1.07) contrast(1.03);
+  --gallery-rail-edge-fade-start: #000000;
+  --gallery-rail-edge-fade-mid: rgba(0, 0, 0, 0.82);
   --header-nav-hero-text: rgba(246, 246, 246, 0.9);
   --header-nav-hero-text-active: #ffffff;
   --header-nav-hero-underline: #ffffff;
@@ -1383,6 +1387,37 @@ a {
   overflow: hidden;
   padding: 0;
   position: relative;
+}
+
+.gallery-scroll-viewport::before,
+.gallery-scroll-viewport::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: clamp(1.4rem, 5vw, 5.5rem);
+  z-index: 6;
+}
+
+.gallery-scroll-viewport::before {
+  left: 0;
+  background: linear-gradient(
+    to right,
+    var(--gallery-rail-edge-fade-start) 0%,
+    var(--gallery-rail-edge-fade-mid) 46%,
+    transparent 100%
+  );
+}
+
+.gallery-scroll-viewport::after {
+  right: 0;
+  background: linear-gradient(
+    to left,
+    var(--gallery-rail-edge-fade-start) 0%,
+    var(--gallery-rail-edge-fade-mid) 46%,
+    transparent 100%
+  );
 }
 
 .gallery-scroll-stack {
