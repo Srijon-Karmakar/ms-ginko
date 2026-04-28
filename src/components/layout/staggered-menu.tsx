@@ -74,6 +74,7 @@ export function StaggeredMenu({
 }: StaggeredMenuProps) {
   const [open, setOpen] = useState(false);
   const [textLines, setTextLines] = useState<string[]>(["Menu", "Close"]);
+  const [mobileLiteMode, setMobileLiteMode] = useState(false);
   const openRef = useRef(false);
   const busyRef = useRef(false);
 
@@ -95,6 +96,14 @@ export function StaggeredMenu({
 
   const toggleBtnRef = useRef<HTMLButtonElement | null>(null);
   const itemEntranceTweenRef = useRef<gsap.core.Tween | null>(null);
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 820px), (pointer: coarse)");
+    const update = () => setMobileLiteMode(media.matches);
+    update();
+    media.addEventListener?.("change", update);
+    return () => media.removeEventListener?.("change", update);
+  }, []);
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
@@ -145,6 +154,24 @@ export function StaggeredMenu({
     const socialLinks = Array.from(panel.querySelectorAll(".sm-socials-link")) as HTMLElement[];
 
     const offscreen = position === "left" ? -100 : 100;
+
+    if (mobileLiteMode) {
+      gsap.set(itemEls, { clearProps: "transform" });
+      if (numberEls.length) gsap.set(numberEls, { ["--sm-num-opacity" as never]: 1 });
+      if (socialTitle) gsap.set(socialTitle, { opacity: 1 });
+      if (socialLinks.length) gsap.set(socialLinks, { clearProps: "transform,opacity" });
+
+      const tlLite = gsap.timeline({ paused: true });
+      tlLite.fromTo(
+        panel,
+        { xPercent: offscreen },
+        { xPercent: 0, duration: 0.26, ease: "power2.out" },
+        0,
+      );
+      openTlRef.current = tlLite;
+      return tlLite;
+    }
+
     const layerStates = layers.map((el) => ({ el, start: offscreen }));
 
     if (itemEls.length) gsap.set(itemEls, { yPercent: 140, rotate: 10 });
@@ -214,7 +241,7 @@ export function StaggeredMenu({
 
     openTlRef.current = tl;
     return tl;
-  }, [position]);
+  }, [mobileLiteMode, position]);
 
   const playOpen = useCallback(() => {
     if (busyRef.current) return;
@@ -245,6 +272,19 @@ export function StaggeredMenu({
 
     const offscreen = position === "left" ? -100 : 100;
 
+    if (mobileLiteMode) {
+      closeTweenRef.current = gsap.to(panel, {
+        xPercent: offscreen,
+        duration: 0.22,
+        ease: "power2.in",
+        overwrite: "auto",
+        onComplete: () => {
+          busyRef.current = false;
+        },
+      });
+      return;
+    }
+
     closeTweenRef.current = gsap.to(all, {
       xPercent: offscreen,
       duration: 0.32,
@@ -267,7 +307,7 @@ export function StaggeredMenu({
         busyRef.current = false;
       },
     });
-  }, [position]);
+  }, [mobileLiteMode, position]);
 
   const animateIcon = useCallback((opening: boolean) => {
     const icon = iconRef.current;
@@ -276,6 +316,12 @@ export function StaggeredMenu({
     if (!icon || !h || !v) return;
 
     spinTweenRef.current?.kill();
+    if (mobileLiteMode) {
+      gsap.set(h, { rotate: opening ? 45 : 0 });
+      gsap.set(v, { rotate: opening ? -45 : 90 });
+      gsap.set(icon, { rotate: 0 });
+      return;
+    }
     if (opening) {
       gsap.set(icon, { rotate: 0, transformOrigin: "50% 50%" });
       spinTweenRef.current = gsap
@@ -290,7 +336,7 @@ export function StaggeredMenu({
       .to(h, { rotate: 0, duration: 0.35 }, 0)
       .to(v, { rotate: 90, duration: 0.35 }, 0)
       .to(icon, { rotate: 0, duration: 0.001 }, 0);
-  }, []);
+  }, [mobileLiteMode]);
 
   const animateColor = useCallback(
     (opening: boolean) => {
@@ -298,6 +344,11 @@ export function StaggeredMenu({
       if (!btn) return;
 
       colorTweenRef.current?.kill();
+      if (mobileLiteMode) {
+        const targetColor = opening ? openMenuButtonColor : menuButtonColor;
+        gsap.set(btn, { color: targetColor });
+        return;
+      }
       if (changeMenuColorOnOpen) {
         const targetColor = opening ? openMenuButtonColor : menuButtonColor;
         colorTweenRef.current = gsap.to(btn, { color: targetColor, delay: 0.18, duration: 0.3, ease: "power2.out" });
@@ -305,7 +356,7 @@ export function StaggeredMenu({
         gsap.set(btn, { color: menuButtonColor });
       }
     },
-    [changeMenuColorOnOpen, menuButtonColor, openMenuButtonColor],
+    [changeMenuColorOnOpen, menuButtonColor, mobileLiteMode, openMenuButtonColor],
   );
 
   useEffect(() => {
@@ -325,6 +376,12 @@ export function StaggeredMenu({
     if (!inner) return;
 
     textCycleAnimRef.current?.kill();
+
+    if (mobileLiteMode) {
+      setTextLines([opening ? "Close" : "Menu"]);
+      gsap.set(inner, { yPercent: 0 });
+      return;
+    }
 
     const currentLabel = opening ? "Menu" : "Close";
     const targetLabel = opening ? "Close" : "Menu";
@@ -350,7 +407,7 @@ export function StaggeredMenu({
       duration: 0.5 + lineCount * 0.07,
       ease: "power4.out",
     });
-  }, []);
+  }, [mobileLiteMode]);
 
   const toggleMenu = useCallback(() => {
     const target = !openRef.current;
@@ -417,21 +474,23 @@ export function StaggeredMenu({
         data-position={position}
         data-open={open || undefined}
       >
-        <div
-          ref={preLayersRef}
-          className="sm-prelayers absolute top-0 bottom-0 right-0 pointer-events-none z-[65]"
-          aria-hidden="true"
-        >
-          {(() => {
-            const raw = colors.length ? colors.slice(0, 4) : ["#1e1e22", "#35353c"];
-            const arr = [...raw];
-            if (arr.length >= 3) arr.splice(Math.floor(arr.length / 2), 1);
+        {!mobileLiteMode ? (
+          <div
+            ref={preLayersRef}
+            className="sm-prelayers absolute top-0 bottom-0 right-0 pointer-events-none z-[65]"
+            aria-hidden="true"
+          >
+            {(() => {
+              const raw = colors.length ? colors.slice(0, 4) : ["#1e1e22", "#35353c"];
+              const arr = [...raw];
+              if (arr.length >= 3) arr.splice(Math.floor(arr.length / 2), 1);
 
-            return arr.map((c, i) => (
-              <div key={`${c}-${i}`} className="sm-prelayer absolute top-0 right-0 h-full w-full translate-x-0" style={{ background: c }} />
-            ));
-          })()}
-        </div>
+              return arr.map((c, i) => (
+                <div key={`${c}-${i}`} className="sm-prelayer absolute top-0 right-0 h-full w-full translate-x-0" style={{ background: c }} />
+              ));
+            })()}
+          </div>
+        ) : null}
 
         <header className="staggered-menu-header absolute top-0 left-0 z-[75] flex w-full items-center justify-between bg-transparent p-[1.1rem] pointer-events-none sm:p-[1.3rem]">
           {showLogo ? (
@@ -494,8 +553,7 @@ export function StaggeredMenu({
         <aside
           id="staggered-menu-panel"
           ref={panelRef}
-          className="staggered-menu-panel absolute top-0 right-0 z-[68] flex h-full flex-col overflow-y-auto p-[6em_2em_2em_2em] backdrop-blur-[12px] pointer-events-auto"
-          style={{ WebkitBackdropFilter: "blur(12px)" }}
+          className="staggered-menu-panel absolute top-0 right-0 z-[68] flex h-full flex-col overflow-y-auto p-[6em_2em_2em_2em] pointer-events-auto"
           aria-hidden={!open}
         >
           <div className="sm-panel-inner flex flex-1 flex-col gap-5">
@@ -593,7 +651,7 @@ export function StaggeredMenu({
 .sm-scope .sm-icon { position: relative; width: 14px; height: 14px; flex: 0 0 14px; display: inline-flex; align-items: center; justify-content: center; will-change: transform; }
 .sm-scope .sm-panel-itemWrap { position: relative; overflow: hidden; line-height: 1; }
 .sm-scope .sm-icon-line { position: absolute; left: 50%; top: 50%; width: 100%; height: 2px; background: currentColor; border-radius: 2px; transform: translate(-50%, -50%); will-change: transform; }
-.sm-scope .staggered-menu-panel { position: absolute; top: 0; right: 0; width: clamp(280px, 42vw, 480px); height: 100%; background: color-mix(in srgb, var(--background) 95%, transparent); color: var(--header-nav-solid-text-active); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); display: flex; flex-direction: column; padding: 6em 2em 2em 2em; overflow-y: auto; z-index: 68; border-left: 1px solid color-mix(in srgb, var(--border) 45%, transparent); -ms-overflow-style: none; scrollbar-width: none; scrollbar-color: transparent transparent; }
+.sm-scope .staggered-menu-panel { position: absolute; top: 0; right: 0; width: clamp(280px, 42vw, 480px); height: 100%; background: color-mix(in srgb, var(--background) 95%, transparent); color: var(--header-nav-solid-text-active); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); display: flex; flex-direction: column; padding: 6em 2em 2em 2em; overflow-y: auto; z-index: 68; border-left: 1px solid color-mix(in srgb, var(--border) 45%, transparent); -ms-overflow-style: none; scrollbar-width: none; scrollbar-color: transparent transparent; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; will-change: transform; }
 .sm-scope .staggered-menu-panel::-webkit-scrollbar { width: 2px; }
 .sm-scope .staggered-menu-panel::-webkit-scrollbar-track { background: transparent; }
 .sm-scope .staggered-menu-panel::-webkit-scrollbar-thumb { background: transparent; border-radius: 999px; }
@@ -628,6 +686,9 @@ export function StaggeredMenu({
 @media (max-width: 640px) {
   .sm-scope .staggered-menu-panel,
   .sm-scope .sm-prelayers { width: 100%; left: 0; right: 0; }
+  .sm-scope .staggered-menu-panel { background: var(--background); backdrop-filter: none; -webkit-backdrop-filter: none; border-left: none; }
+  .sm-scope .sm-prelayers { display: none; }
+  .sm-scope .sm-panel-itemLabel { will-change: auto; }
   .sm-scope .sm-panel-item { font-size: clamp(2.2rem, 12vw, 3.2rem); }
 }
       `}</style>

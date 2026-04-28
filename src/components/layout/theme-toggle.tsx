@@ -15,6 +15,8 @@ const applyTheme = (theme: Theme) => {
 export function ThemeToggle({ compact = false }: ThemeToggleProps) {
   const [theme, setTheme] = useState<Theme>("clean");
   const compactToggleId = useId().replace(/:/g, "");
+  const inputId = `theme-toggle-${compactToggleId}`;
+  const maskId = `moon-mask-${compactToggleId}`;
 
   useEffect(() => {
     const stored = window.localStorage.getItem(STORAGE_KEY);
@@ -31,36 +33,39 @@ export function ThemeToggle({ compact = false }: ThemeToggleProps) {
     window.localStorage.setItem(STORAGE_KEY, nextTheme);
   };
 
-  if (compact) {
-    const isAmoled = theme === "amoled";
-    return (
-      <div className="theme-toggle-power">
-        <input
-          id={`theme-toggle-${compactToggleId}`}
-          className="theme-toggle-power-input"
-          type="checkbox"
-          checked={isAmoled}
-          onChange={onToggle}
-          aria-label="Toggle theme"
-          aria-checked={isAmoled}
-        />
-        <label
-          className="theme-toggle-power-switch"
-          htmlFor={`theme-toggle-${compactToggleId}`}
-          title={theme === "amoled" ? "Switch to White theme" : "Switch to Amoled theme"}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" className="theme-toggle-power-slider" aria-hidden="true">
-            <path d="M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32V256c0 17.7 14.3 32 32 32s32-14.3 32-32V32zM143.5 120.6c13.6-11.3 15.4-31.5 4.1-45.1s-31.5-15.4-45.1-4.1C49.7 115.4 16 181.8 16 256c0 132.5 107.5 240 240 240s240-107.5 240-240c0-74.2-33.8-140.6-86.6-184.6c-13.6-11.3-33.8-9.4-45.1 4.1s-9.4 33.8 4.1 45.1c38.9 32.3 63.5 81 63.5 135.4c0 97.2-78.8 176-176 176s-176-78.8-176-176c0-54.4 24.7-103.1 63.5-135.4z" />
-          </svg>
-        </label>
-      </div>
-    );
-  }
+  const isAmoled = theme === "amoled";
 
   return (
-    <button type="button" onClick={onToggle} className="theme-toggle" aria-label="Toggle theme">
-      <span className="theme-toggle-dot" />
-      <span suppressHydrationWarning>{theme === "amoled" ? "Amoled" : "White"}</span>
-    </button>
+    <label
+      htmlFor={inputId}
+      className={`themeToggle st-sunMoonThemeToggleBtn ${compact ? "themeToggle--compact" : ""}`}
+      title={isAmoled ? "Switch to White theme" : "Switch to Amoled theme"}
+    >
+      <input
+        id={inputId}
+        className="themeToggleInput"
+        type="checkbox"
+        checked={isAmoled}
+        onChange={onToggle}
+        aria-label="Toggle theme"
+        aria-checked={isAmoled}
+      />
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor" stroke="none" aria-hidden="true">
+        <mask id={maskId}>
+          <rect x="0" y="0" width="20" height="20" fill="white" />
+          <circle cx="11" cy="3" r="8" fill="black" />
+        </mask>
+        <circle className="sunMoon" cx="10" cy="10" r="8" mask={`url(#${maskId})`} />
+        <g>
+          <circle className="sunRay sunRay1" cx="18" cy="10" r="1.5" />
+          <circle className="sunRay sunRay2" cx="14" cy="16.928" r="1.5" />
+          <circle className="sunRay sunRay3" cx="6" cy="16.928" r="1.5" />
+          <circle className="sunRay sunRay4" cx="2" cy="10" r="1.5" />
+          <circle className="sunRay sunRay5" cx="6" cy="3.1718" r="1.5" />
+          <circle className="sunRay sunRay6" cx="14" cy="3.1718" r="1.5" />
+        </g>
+      </svg>
+      {!compact ? <span suppressHydrationWarning className="sr-only">{isAmoled ? "Amoled" : "White"}</span> : null}
+    </label>
   );
 }

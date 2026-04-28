@@ -176,26 +176,86 @@ export function HeroTakeover() {
             </div>
           </div>
 
+          {/* Ginko leaf ornament — fills middle gap on mobile */}
           <div
-            className="hero-copy-track mt-2 grid gap-4 pb-10 sm:mt-4 sm:gap-6 sm:pb-16 lg:grid-cols-2"
+            className="hero-mobile-ornament"
+            aria-hidden="true"
+            style={{ opacity: contentOpacity }}
+          >
+            <svg
+              className="hero-ornament-svg"
+              viewBox="0 0 80 100"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              {/* Stem */}
+              <path className="hero-ornament-path" d="M40 96 L40 70" strokeWidth="1.8" pathLength="1" />
+              {/* Left lobe */}
+              <path
+                className="hero-ornament-path"
+                d="M40 70 C35 68 18 62 9 48 C2 36 4 20 14 13 C24 6 36 10 40 22"
+                strokeWidth="1.8"
+                pathLength="1"
+                style={{ animationDelay: "200ms" }}
+              />
+              {/* Right lobe */}
+              <path
+                className="hero-ornament-path"
+                d="M40 22 C44 10 56 6 66 13 C76 20 78 36 71 48 C62 62 45 68 40 70"
+                strokeWidth="1.8"
+                pathLength="1"
+                style={{ animationDelay: "440ms" }}
+              />
+              {/* Central vein */}
+              <path
+                className="hero-ornament-path"
+                d="M40 70 L40 24"
+                strokeWidth="1"
+                pathLength="1"
+                style={{ animationDelay: "700ms" }}
+              />
+              {/* Left veins */}
+              <path
+                className="hero-ornament-path"
+                d="M40 62 C33 54 19 46 11 38 M40 50 C31 43 17 33 12 22"
+                strokeWidth="0.9"
+                pathLength="1"
+                style={{ animationDelay: "880ms" }}
+              />
+              {/* Right veins */}
+              <path
+                className="hero-ornament-path"
+                d="M40 62 C47 54 61 46 69 38 M40 50 C49 43 63 33 68 22"
+                strokeWidth="0.9"
+                pathLength="1"
+                style={{ animationDelay: "1020ms" }}
+              />
+            </svg>
+          </div>
+
+          <div
+            className="hero-copy-track hero-mobile-copy mt-2 grid gap-4 pb-10 sm:mt-4 sm:gap-6 sm:pb-16 lg:grid-cols-2"
             style={{ opacity: contentOpacity, transform: `translateY(${contentLift}px)` }}
           >
             <h1
-              className="reveal-text text-2xl font-bold italic leading-tight text-[var(--foreground)] sm:text-5xl lg:text-[3.4rem]"
+              className="reveal-text hero-mobile-title text-2xl font-bold italic leading-tight text-[var(--foreground)] sm:text-5xl lg:text-[3.4rem]"
               style={{ fontFamily: "var(--font-display), sans-serif" }}
             >
               Indian Brunch & Coffee Shop in the Heart of the City
             </h1>
-            <div className="space-y-4 lg:pt-3">
-              <p className="reveal-text ui-copy text-lg leading-8 sm:text-xl" style={{ animationDelay: "140ms" }}>
+            <div className="hero-mobile-copy-body space-y-0 sm:space-y-4 lg:pt-3">
+              <p className="reveal-text hero-mobile-lead ui-copy text-lg leading-8 sm:text-xl" style={{ animationDelay: "140ms" }}>
                 We believe coffee and food are more than simple pleasures. They are moments to connect, to slow down,
                 and to feel right at home.
               </p>
-              <p className="reveal-text font-semibold italic text-[var(--foreground)]" style={{ animationDelay: "240ms" }}>
+              <p
+                className="reveal-text hero-mobile-welcome font-semibold italic text-[var(--foreground)]"
+                style={{ animationDelay: "240ms" }}
+              >
                 Welcome to Miss Ginko!
               </p>
-              <div className="reveal-text pt-1" style={{ animationDelay: "320ms" }}>
-                <Link href="/reserve" className="ui-btn-primary px-6 py-3 text-[11px] sm:text-xs">
+              <div className="reveal-text hero-mobile-cta pt-1" style={{ animationDelay: "320ms" }}>
+                <Link href="/reserve" className="ui-btn-primary hero-mobile-cta-btn px-6 py-3 text-[11px] sm:text-xs">
                   Reserve Your Table
                 </Link>
               </div>

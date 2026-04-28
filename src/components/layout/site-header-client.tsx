@@ -14,6 +14,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 const navLinks = [
   { label: "Home", href: "/" },
   { label: "Menu", href: "/menu" },
+  { label: "Book", href: "/reserve" },
   { label: "About", href: "/about" },
   { label: "Gallery", href: "/#gallery" },
 ];
@@ -239,9 +240,6 @@ export function SiteHeaderClient() {
             headerActions={
               <>
                 <ThemeToggle compact />
-                <Link href="/reserve" className="ui-btn-primary px-4 py-2 text-[11px] sm:px-6 sm:py-2.5 sm:text-[12px]">
-                  Book Table
-                </Link>
                 {headerUser ? (
                   <div ref={profileMenuRef} className="relative hidden md:block">
                     <button
